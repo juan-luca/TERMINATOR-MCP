@@ -1,0 +1,125 @@
+{
+  "Version": 1,
+  "Hash": "4iSGcLTlU+EiVy9MxLB3eaDz691o0BCHgcCv3p3WTYo=",
+  "Source": "appbasicacrud",
+  "BasePath": "_content/appbasicacrud",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "appbasicacrud\\wwwroot",
+      "Source": "appbasicacrud",
+      "ContentRoot": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\wwwroot\\",
+      "BasePath": "_content/appbasicacrud",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\wwwroot\\index.html",
+      "SourceId": "appbasicacrud",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\wwwroot\\",
+      "BasePath": "_content/appbasicacrud",
+      "RelativePath": "index#[.{fingerprint}]?.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "0hih0h4llq",
+      "Integrity": "xNvVG7ypUKA+1IybcPSd/7jD5zmDjaDt19dkR6SuGSs=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\index.html"
+    }
+  ],
+  "Endpoints": [
+    {
+      "Route": "index.0hih0h4llq.html",
+      "AssetFile": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\wwwroot\\index.html",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "383"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"xNvVG7ypUKA+1IybcPSd/7jD5zmDjaDt19dkR6SuGSs=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Mon, 28 Apr 2025 23:40:01 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "0hih0h4llq"
+        },
+        {
+          "Name": "label",
+          "Value": "index.html"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-xNvVG7ypUKA+1IybcPSd/7jD5zmDjaDt19dkR6SuGSs="
+        }
+      ]
+    },
+    {
+      "Route": "index.html",
+      "AssetFile": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\wwwroot\\index.html",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "383"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"xNvVG7ypUKA+1IybcPSd/7jD5zmDjaDt19dkR6SuGSs=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Mon, 28 Apr 2025 23:40:01 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-xNvVG7ypUKA+1IybcPSd/7jD5zmDjaDt19dkR6SuGSs="
+        }
+      ]
+    }
+  ]
+}

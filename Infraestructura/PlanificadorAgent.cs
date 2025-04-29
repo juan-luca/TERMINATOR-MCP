@@ -1,35 +1,41 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Net.Http;
-using System.Net.Http.Json;
-using Microsoft.Extensions.Configuration;
+using Infraestructura;
 using Microsoft.Extensions.Logging;
 using Shared;
-
-namespace Infraestructura;
+using System.Text.Json;
 public class PlanificadorAgent : IPlanificadorAgent
 {
     private readonly GeminiClient _gemini;
+    private readonly ILogger<PlanificadorAgent> _logger;
 
-    public PlanificadorAgent(GeminiClient gemini)
+    public PlanificadorAgent(GeminiClient gemini, ILogger<PlanificadorAgent> logger)
     {
         _gemini = gemini;
+        _logger = logger;
     }
 
     public async Task<string[]> ConvertirPromptABacklog(Prompt prompt)
     {
-        var mensaje = $"""
-        Sos un ingeniero de software experto en Blazor.
-        Convertí este requerimiento en una lista de tareas técnicas detalladas paso a paso para implementarlo:
+        try
+        {
+            var mensaje = $"""
+            Sos un ingeniero de software experto en Blazor.
+            Convertí este requerimiento en una lista de tareas técnicas detalladas paso a paso para implementarlo:
 
-        {prompt.Descripcion}
-        """;
+            {prompt.Descripcion}
+            """;
 
-        var respuesta = await _gemini.GenerarAsync(mensaje);
+            var respuesta = await _gemini.GenerarAsync(mensaje);
 
-        return respuesta.Split("\n")
-                        .Select(x => x.Trim())
-                        .Where(x => !string.IsNullOrWhiteSpace(x))
-                        .ToArray();
+            return respuesta
+                   .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                   .Select(x => x.Trim())
+                   .Where(x => !string.IsNullOrWhiteSpace(x))
+                   .ToArray();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "❌ Error al convertir prompt a backlog. Prompt: {Titulo}", prompt.Titulo);
+            return Array.Empty<string>();
+        }
     }
 }

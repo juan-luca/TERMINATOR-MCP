@@ -1,7 +1,10 @@
-﻿namespace Shared;
+﻿using System.Threading.Tasks;
 
-public interface IPromptStore
+namespace Shared
 {
-    Task GuardarAsync(Prompt prompt);
-    Task<Prompt?> ObtenerSiguienteAsync();
+    public interface IPromptStore
+    {
+        Task GuardarAsync(Prompt prompt);
+        Task<Prompt?> ObtenerSiguienteAsync();
+    }
 }
