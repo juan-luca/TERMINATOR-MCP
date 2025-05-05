@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\buildMultiTargeting\appbasicacrud_completa.props" />
-</Project>

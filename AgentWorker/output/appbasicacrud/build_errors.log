@@ -1,0 +1,14 @@
+--- Standard Output ---
+C:\Program Files\dotnet\sdk\9.0.200\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.Sdk.DefaultItems.Shared.targets(213,5): error NETSDK1022: Se incluyeron "Content" elementos duplicados. El SDK de .NET incluye "Content" elementos de su directorio de proyecto de manera predeterminada. Puede quitar esos elementos del archivo de proyecto o establecer la propiedad "EnableDefaultContentItems" en "false" si desea incluirlos explícitamente en el archivo de proyecto. Para más información, consulte https://aka.ms/sdkimplicititems. Los elementos duplicados eran: 'wwwroot\css\bootstrap\bootstrap.min.css'; 'wwwroot\css\site.css'; 'wwwroot\favicon.ico' [C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\output\appbasicacrud\appbasicacrud.csproj]
+
+ERROR al compilar.
+
+C:\Program Files\dotnet\sdk\9.0.200\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.Sdk.DefaultItems.Shared.targets(213,5): error NETSDK1022: Se incluyeron "Content" elementos duplicados. El SDK de .NET incluye "Content" elementos de su directorio de proyecto de manera predeterminada. Puede quitar esos elementos del archivo de proyecto o establecer la propiedad "EnableDefaultContentItems" en "false" si desea incluirlos explícitamente en el archivo de proyecto. Para más información, consulte https://aka.ms/sdkimplicititems. Los elementos duplicados eran: 'wwwroot\css\bootstrap\bootstrap.min.css'; 'wwwroot\css\site.css'; 'wwwroot\favicon.ico' [C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\output\appbasicacrud\appbasicacrud.csproj]
+    0 Advertencia(s)
+    1 Errores
+
+Tiempo transcurrido 00:00:03.36
+
+--- Standard Error ---
+
+Exit Code: 1

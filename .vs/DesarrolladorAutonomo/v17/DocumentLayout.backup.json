@@ -3,12 +3,8 @@
   "WorkspaceRootPath": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\infraestructura\\promptstorearchivo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|solutionrelative:infraestructura\\promptstorearchivo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{E326C83E-7707-45FA-965E-D36EDF2C9C74}|AgentWorker\\AgentWorker.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\agentworker\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{E326C83E-7707-45FA-965E-D36EDF2C9C74}|AgentWorker\\AgentWorker.csproj|solutionrelative:agentworker\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\infraestructura\\desarrolladoragent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|solutionrelative:infraestructura\\desarrolladoragent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{E326C83E-7707-45FA-965E-D36EDF2C9C74}|AgentWorker\\AgentWorker.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\agentworker\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
@@ -19,16 +15,32 @@
       "RelativeMoniker": "D:0:0:{E326C83E-7707-45FA-965E-D36EDF2C9C74}|AgentWorker\\AgentWorker.csproj|solutionrelative:agentworker\\worker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\infraestructura\\promptmemory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|solutionrelative:infraestructura\\promptmemory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\infraestructura\\planificadoragent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|solutionrelative:infraestructura\\planificadoragent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D822ECB2-B090-4872-8FB2-6FE1124BF7E0}|Shared\\Shared.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\shared\\iplanificadoragent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D822ECB2-B090-4872-8FB2-6FE1124BF7E0}|Shared\\Shared.csproj|solutionrelative:shared\\iplanificadoragent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D822ECB2-B090-4872-8FB2-6FE1124BF7E0}|Shared\\Shared.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\shared\\filetask.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D822ECB2-B090-4872-8FB2-6FE1124BF7E0}|Shared\\Shared.csproj|solutionrelative:shared\\filetask.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{4067FDA3-7991-465E-A9A5-06CAC433E80B}|AgentAPI\\AgentAPI.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\agentapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{4067FDA3-7991-465E-A9A5-06CAC433E80B}|AgentAPI\\AgentAPI.csproj|solutionrelative:agentapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\infraestructura\\desarrolladoragent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|solutionrelative:infraestructura\\desarrolladoragent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\infraestructura\\promptstorearchivo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|solutionrelative:infraestructura\\promptstorearchivo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E326C83E-7707-45FA-965E-D36EDF2C9C74}|AgentWorker\\AgentWorker.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\agentworker\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E326C83E-7707-45FA-965E-D36EDF2C9C74}|AgentWorker\\AgentWorker.csproj|solutionrelative:agentworker\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\infraestructura\\promptmemory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|solutionrelative:infraestructura\\promptmemory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\infraestructura\\geminiclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -37,10 +49,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\infraestructura\\errorfixer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|solutionrelative:infraestructura\\errorfixer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\infraestructura\\planificadoragent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|solutionrelative:infraestructura\\planificadoragent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D822ECB2-B090-4872-8FB2-6FE1124BF7E0}|Shared\\Shared.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\shared\\ierrorfixer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -53,10 +61,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\infraestructura\\infraestructura.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{10369D84-3AB0-45D4-BFA9-45785800A518}|Infraestructura\\Infraestructura.csproj|solutionrelative:infraestructura\\infraestructura.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D822ECB2-B090-4872-8FB2-6FE1124BF7E0}|Shared\\Shared.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\shared\\iplanificadoragent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{D822ECB2-B090-4872-8FB2-6FE1124BF7E0}|Shared\\Shared.csproj|solutionrelative:shared\\iplanificadoragent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D822ECB2-B090-4872-8FB2-6FE1124BF7E0}|Shared\\Shared.csproj|c:\\users\\juan\\documents\\github\\terminator-mcp\\shared\\ipromptstore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -82,11 +86,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 14,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 11,
               "Title": "ErrorFixer.cs",
               "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\ErrorFixer.cs",
               "RelativeDocumentMoniker": "Infraestructura\\ErrorFixer.cs",
@@ -95,12 +99,11 @@
               "ViewState": "AgIAAC4AAAAAAAAAAAAiwEIAAAA3AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-28T01:43:31.816Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 10,
               "Title": "GeminiClient.cs",
               "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\GeminiClient.cs",
               "RelativeDocumentMoniker": "Infraestructura\\GeminiClient.cs",
@@ -109,18 +112,17 @@
               "ViewState": "AgIAAA4AAAAAAAAAAAAUwDIAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-24T05:20:30.923Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 0,
               "Title": "DesarrolladorAgent.cs",
               "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\DesarrolladorAgent.cs",
               "RelativeDocumentMoniker": "Infraestructura\\DesarrolladorAgent.cs",
-              "ToolTip": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\DesarrolladorAgent.cs",
-              "RelativeToolTip": "Infraestructura\\DesarrolladorAgent.cs",
-              "ViewState": "AgIAAN8AAAAAAAAAAADwv+8AAAAAAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\DesarrolladorAgent.cs*",
+              "RelativeToolTip": "Infraestructura\\DesarrolladorAgent.cs*",
+              "ViewState": "AgIAAOEAAAAAAAAAAADwvw4BAAA6AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-24T05:47:59.311Z",
               "IsPinned": true,
@@ -128,17 +130,30 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 2,
               "Title": "Worker.cs",
               "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\Worker.cs",
               "RelativeDocumentMoniker": "AgentWorker\\Worker.cs",
               "ToolTip": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\Worker.cs",
               "RelativeToolTip": "AgentWorker\\Worker.cs",
-              "ViewState": "AgIAAKAAAAAAAAAAAAAcwGAAAAAxAAAAAAAAAA==",
+              "ViewState": "AgIAAB8BAAAAAAAAAAAUwC8BAABCAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-24T05:21:52.749Z",
               "IsPinned": true,
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentAPI\\Program.cs",
+              "RelativeDocumentMoniker": "AgentAPI\\Program.cs",
+              "ToolTip": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentAPI\\Program.cs",
+              "RelativeToolTip": "AgentAPI\\Program.cs",
+              "ViewState": "AgIAAAcAAAAAAAAAAADwvyIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-24T05:29:51.098Z",
+              "IsPinned": true
             },
             {
               "$type": "Bookmark",
@@ -162,20 +177,32 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 5,
+              "Title": "FileTask.cs",
+              "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Shared\\FileTask.cs",
+              "RelativeDocumentMoniker": "Shared\\FileTask.cs",
+              "ToolTip": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Shared\\FileTask.cs",
+              "RelativeToolTip": "Shared\\FileTask.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAA1AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-29T00:41:05.555Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\appsettings.json",
               "RelativeDocumentMoniker": "AgentWorker\\appsettings.json",
               "ToolTip": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\appsettings.json",
               "RelativeToolTip": "AgentWorker\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAeAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2025-04-24T06:18:15.227Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 9,
               "Title": "PromptMemory.cs",
               "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\PromptMemory.cs",
               "RelativeDocumentMoniker": "Infraestructura\\PromptMemory.cs",
@@ -183,25 +210,47 @@
               "RelativeToolTip": "Infraestructura\\PromptMemory.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAC4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-24T05:28:37.526Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-04-24T05:28:37.526Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 8,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\Program.cs",
               "RelativeDocumentMoniker": "AgentWorker\\Program.cs",
               "ToolTip": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\Program.cs",
               "RelativeToolTip": "AgentWorker\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAArAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-24T05:27:59.426Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-04-24T05:27:59.426Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 3,
+              "Title": "PlanificadorAgent.cs",
+              "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\PlanificadorAgent.cs",
+              "RelativeDocumentMoniker": "Infraestructura\\PlanificadorAgent.cs",
+              "ToolTip": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\PlanificadorAgent.cs",
+              "RelativeToolTip": "Infraestructura\\PlanificadorAgent.cs",
+              "ViewState": "AgIAAAIAAAAAAAAAAAAYwA0AAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-24T05:21:20.25Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "IPlanificadorAgent.cs",
+              "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Shared\\IPlanificadorAgent.cs",
+              "RelativeDocumentMoniker": "Shared\\IPlanificadorAgent.cs",
+              "ToolTip": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Shared\\IPlanificadorAgent.cs",
+              "RelativeToolTip": "Shared\\IPlanificadorAgent.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-24T05:22:13.883Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
               "Title": "IErrorFixer.cs",
               "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Shared\\IErrorFixer.cs",
               "RelativeDocumentMoniker": "Shared\\IErrorFixer.cs",
@@ -209,51 +258,23 @@
               "RelativeToolTip": "Shared\\IErrorFixer.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAqwAYAAABSAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-28T01:43:48.363Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-04-28T01:43:48.363Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "PlanificadorAgent.cs",
-              "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\PlanificadorAgent.cs",
-              "RelativeDocumentMoniker": "Infraestructura\\PlanificadorAgent.cs",
-              "ToolTip": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\PlanificadorAgent.cs",
-              "RelativeToolTip": "Infraestructura\\PlanificadorAgent.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAA2AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-24T05:21:20.25Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 7,
               "Title": "PromptStoreArchivo.cs",
               "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\PromptStoreArchivo.cs",
               "RelativeDocumentMoniker": "Infraestructura\\PromptStoreArchivo.cs",
               "ToolTip": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\PromptStoreArchivo.cs",
               "RelativeToolTip": "Infraestructura\\PromptStoreArchivo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAZAAAAAAAAAA==",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAQwAoAAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-24T06:08:38.958Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-04-24T06:08:38.958Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentAPI\\Program.cs",
-              "RelativeDocumentMoniker": "AgentAPI\\Program.cs",
-              "ToolTip": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentAPI\\Program.cs",
-              "RelativeToolTip": "AgentAPI\\Program.cs",
-              "ViewState": "AgIAAAEAAAAAAAAAAADwvyQAAAADAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-24T05:29:51.098Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 14,
               "Title": "Infraestructura.csproj",
               "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\Infraestructura.csproj",
               "RelativeDocumentMoniker": "Infraestructura\\Infraestructura.csproj",
@@ -261,12 +282,11 @@
               "RelativeToolTip": "Infraestructura\\Infraestructura.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAA6AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-04-24T05:22:17.915Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-04-24T05:22:17.915Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 15,
               "Title": "IPromptStore.cs",
               "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Shared\\IPromptStore.cs",
               "RelativeDocumentMoniker": "Shared\\IPromptStore.cs",
@@ -274,12 +294,11 @@
               "RelativeToolTip": "Shared\\IPromptStore.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-24T05:29:01.122Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-04-24T05:29:01.122Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 13,
               "Title": "CorrectedErrorsStore.cs",
               "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\CorrectedErrorsStore.cs",
               "RelativeDocumentMoniker": "Infraestructura\\CorrectedErrorsStore.cs",
@@ -287,12 +306,11 @@
               "RelativeToolTip": "Infraestructura\\CorrectedErrorsStore.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAADYAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-28T03:39:49.443Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-04-28T03:39:49.443Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 17,
               "Title": "IDesarrolladorAgent.cs",
               "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Shared\\IDesarrolladorAgent.cs",
               "RelativeDocumentMoniker": "Shared\\IDesarrolladorAgent.cs",
@@ -304,20 +322,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "IPlanificadorAgent.cs",
-              "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Shared\\IPlanificadorAgent.cs",
-              "RelativeDocumentMoniker": "Shared\\IPlanificadorAgent.cs",
-              "ToolTip": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Shared\\IPlanificadorAgent.cs",
-              "RelativeToolTip": "Shared\\IPlanificadorAgent.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-24T05:22:13.883Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 16,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentAPI\\appsettings.json",
               "RelativeDocumentMoniker": "AgentAPI\\appsettings.json",
@@ -329,7 +334,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 18,
               "Title": "Prompt.cs",
               "DocumentMoniker": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Shared\\Prompt.cs",
               "RelativeDocumentMoniker": "Shared\\Prompt.cs",
