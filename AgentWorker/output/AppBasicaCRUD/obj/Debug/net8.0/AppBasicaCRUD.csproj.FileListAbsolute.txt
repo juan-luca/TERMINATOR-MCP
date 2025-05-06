@@ -1,0 +1,7 @@
+C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\output\appbasicacrud\obj\Debug\net8.0\AppBasicaCRUD.csproj.AssemblyReference.cache
+C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\output\appbasicacrud\obj\Debug\net8.0\AppBasicaCRUD.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\output\appbasicacrud\obj\Debug\net8.0\AppBasicaCRUD.AssemblyInfoInputs.cache
+C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\output\appbasicacrud\obj\Debug\net8.0\AppBasicaCRUD.AssemblyInfo.cs
+C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\output\appbasicacrud\obj\Debug\net8.0\AppBasicaCRUD.csproj.CoreCompileInputs.cache
+C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\output\appbasicacrud\obj\Debug\net8.0\AppBasicaCRUD.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\output\appbasicacrud\obj\Debug\net8.0\AppBasicaCRUD.sourcelink.json

@@ -1,1 +1,12 @@
-using Microsoft.AspNetCore.Builder;using Microsoft.AspNetCore.Components;using Microsoft.AspNetCore.Components.Web;using Microsoft.Extensions.DependencyInjection;using Microsoft.Extensions.Hosting;var builder = WebApplication.CreateBuilder(args);builder.Services.AddRazorPages();builder.Services.AddServerSideBlazor();var app = builder.Build();if (!app.Environment.IsDevelopment()){app.UseExceptionHandler("/Error");}app.UseStaticFiles();app.UseRouting();app.MapBlazorHub();app.MapFallbackToPage("/_Host");app.Run();
+using System;
+
+namespace AppBasicaCRUD
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("¡Hola, mundo!");
+        }
+    }
+}

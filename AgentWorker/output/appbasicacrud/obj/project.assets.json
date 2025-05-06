@@ -858,9 +858,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\appbasicacrud.csproj",
-      "projectName": "appbasicacrud",
-      "projectPath": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\appbasicacrud.csproj",
+      "projectUniqueName": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\AppBasicaCRUD.csproj",
+      "projectName": "AppBasicaCRUD",
+      "projectPath": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\AppBasicaCRUD.csproj",
       "packagesPath": "C:\\Users\\Juan\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\obj\\",
       "projectStyle": "PackageReference",

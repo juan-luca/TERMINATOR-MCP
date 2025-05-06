@@ -1,38 +1,25 @@
 using Microsoft.EntityFrameworkCore;
-using AppBasicaCRUD.Models; // Asegúrate que el namespace del modelo Producto sea correcto
+using AppBasicaCRUD.Models;
 
 namespace AppBasicaCRUD.Data
 {
     /// <summary>
-    /// Contexto de la base de datos para la aplicación.
-    /// Gestiona las entidades de la aplicación, como Producto.
+    /// Represents the application database context.
     /// </summary>
     public class ApplicationDbContext : DbContext
     {
         /// <summary>
-        /// Inicializa una nueva instancia de la clase <see cref="ApplicationDbContext"/>.
+        /// Initializes a new instance of the <see cref="ApplicationDbContext"/> class.
         /// </summary>
-        /// <param name="options">Las opciones a usar por este DbContext.</param>
+        /// <param name="options">The options to be used by the <see cref="DbContext"/>.</param>
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options) // Tarea específica: Llamada al constructor base con las opciones
+            : base(options)
         {
         }
 
         /// <summary>
-        /// Obtiene o establece el DbSet para la entidad Producto.
-        /// Representa la colección de todos los productos en la base de datos.
+        /// Gets or sets the DbSet of Products.
         /// </summary>
         public DbSet<Producto> Productos { get; set; }
-
-        // Puedes añadir aquí configuraciones adicionales del modelo si son necesarias,
-        // usando OnModelCreating. Para este caso simple, no es requerido.
-        /*
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-            // Ejemplo: Configuración adicional para la entidad Producto
-            // modelBuilder.Entity<Producto>().ToTable("CatalogoProductos");
-        }
-        */
     }
 }

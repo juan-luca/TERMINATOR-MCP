@@ -347,3 +347,4 @@ C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\obj\Debug\net9.0\refin
 C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\obj\Debug\net9.0\AgentWorker.pdb
 C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\obj\Debug\net9.0\AgentWorker.genruntimeconfig.cache
 C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\obj\Debug\net9.0\ref\AgentWorker.dll
+C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\bin\Debug\net9.0\corrected_errors.json
