@@ -1,0 +1,41 @@
+@page "/Error"
+@using Microsoft.AspNetCore.Components.Web
+@inject ILogger<Error> Logger
+
+<PageTitle>Error</PageTitle>
+
+<h1 class="text-danger">Error.</h1>
+<h2 class="text-danger">An error occurred while processing your request.</h2>
+
+@if (ShowDetailedErrors)
+{
+    <p>
+        <strong>Development environment error details:</strong>
+        <code>@Exception?.Message</code>
+        <br />
+        <a href="javascript:location.reload()">Reload</a>
+    </p>
+}
+else
+{
+     <p>Sorry, something went wrong. Please try again later.</p>
+}
+
+
+@code {
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    [Parameter]
+    public Exception? Exception { get; set; }
+
+    private bool ShowDetailedErrors => !string.IsNullOrEmpty(Exception?.Message); // Basic check
+
+    protected override void OnInitialized()
+    {
+        // Log the error
+        Logger.LogError(Exception, "An unhandled error occurred.");
+
+        // You might want to add more sophisticated error handling/display logic here
+    }
+}
