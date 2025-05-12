@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AppBasicaCRUD")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2ddc2a1a66cefa7768adebb1764698c1d5dcb74d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+45132be734dce0a226def6aab75e010b9e95ed8c")]
 [assembly: System.Reflection.AssemblyProductAttribute("AppBasicaCRUD")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AppBasicaCRUD")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

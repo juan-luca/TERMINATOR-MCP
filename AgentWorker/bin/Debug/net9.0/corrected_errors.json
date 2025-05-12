@@ -3,7 +3,7 @@
   "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Shared\\NavMenu.razor": "AE9D2BC9DA04FFC74D5D3A2CEBA506DA0196CBC354114F8F854D99F7D03A9D02",
   "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Pages\\Error.cshtml": "3AA3DFF4C8C24935B97614BAE99C2D70BF1208560C8FFCE8231E9B0E189BE7D9",
   "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Pages\\_Host.cshtml": "02A0F04D9261722F2E68D70CE4CD7C0CE3C5CD4154C7C58A773FFC8CA0B32E62",
-  "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\_Imports.razor": "BABAD7368A89ADD1614EDF319CFA30784A52431338E76307DF46A957A3E0F370",
+  "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\_Imports.razor": "0D5F4592A856A868EA561D1371BED81414E950E5E9B3D36650CF6F3B2D80E146",
   "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Razor Pages\\Productos\\Create.razor": "94D2619D8BD2B758EB44D1D7FEC6E7A8784577DF168BFD64889D91BBCACEEBD3",
   "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Razor Pages\\Productos\\Delete.razor": "68254DD02F012030ED4CB59C77D60D7002559EF8BA7BFE99E2742CBC9635A0A7",
   "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Razor Pages\\Productos\\Edit.razor": "1833B18C66123610AFE419E4F4B19A96DCC9B4A135AFBD2A74EA3B99088410E2",
@@ -11,10 +11,14 @@
   "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Models\\Producto.cs": "23F41203C89BBFCCA1C5125971D418AC786CD3825C20BFA580DDD564A4D763D8",
   "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\en Program.cs": "225C4C7E945C728DACE0FF124CBC88123CF8F404EA581A8B1BEBC0AF14BD6B96",
   "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Data\\ApplicationDbContext.cs": "C692244F0B14522AA6D422612E51F2FBE45476AC80ADB3E55A0454688385957D",
-  "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Pages\\Index.razor": "EA5FF02ADDAD00BDB9DCD9AE6859A2CA36E6807B00419AE75FDE73603ECD6093",
-  "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Program.cs": "D12ECC2509BD52AC7C7C9FFFED944E32CEC918A7429721744CB25B541D59FB4E",
+  "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Pages\\Index.razor": "3E45B381A37E6449F058880D937B64EF17F6BAC241FB0700DA06C69C219ACB03",
+  "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Program.cs": "C9CDA33FF6AD5F4B0F27063BC66CAB7642FD583C60EAC790E9180725930AD5D5",
   "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Pages\\Productos\\Delete.razor": "217CBF1F7B568ED832A68D52E5517581E14B494D40C1B87CB5C2AFCE6C7F10C1",
   "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Pages\\Productos\\Edit.razor": "A3D0DD5C1423D026EC97E000E31F86C1E09C479C188A2BCE06C49786282776E6",
   "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Pages\\Productos\\Create.razor": "5B504CAA72D750A96295CB7821E1E54C1C0176C0FCB53E608B834DF9051BDA30",
-  "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Pages\\Productos\\Index.razor": "E6ED98934EFE3BFE7D482FF7A1C1C314737C9A8981222AB47AC73235038D85F3"
+  "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Pages\\Productos\\Index.razor": "E6ED98934EFE3BFE7D482FF7A1C1C314737C9A8981222AB47AC73235038D85F3",
+  "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Routes.razor": "7B3B4675DD399372B1DB761AE4A6F7A2E4A5492BF43601D99D66BA4FE85F2695",
+  "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Pages\\Create.razor": "90430B2059BBF11042FBC07DFA0E918EB2DFB4CB5F81C53EE30D388C535F0A94",
+  "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Pages\\Edit.razor": "D74574D24B59566AEED69ECE65B7E27E657A0D800654216D605BBC052715836C",
+  "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentWorker\\output\\appbasicacrud\\Pages\\Delete.razor": "1613A6F994A14B3588F942759F188131FA4E80AC7666E95F282F341CAB1C5EB4"
 }

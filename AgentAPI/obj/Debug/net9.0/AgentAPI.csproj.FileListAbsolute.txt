@@ -195,7 +195,6 @@ C:\Users\juanluca\Desktop\JUAN\MCP\AgentAPI\obj\Debug\net9.0\refint\AgentAPI.dll
 C:\Users\juanluca\Desktop\JUAN\MCP\AgentAPI\obj\Debug\net9.0\AgentAPI.pdb
 C:\Users\juanluca\Desktop\JUAN\MCP\AgentAPI\obj\Debug\net9.0\AgentAPI.genruntimeconfig.cache
 C:\Users\juanluca\Desktop\JUAN\MCP\AgentAPI\obj\Debug\net9.0\ref\AgentAPI.dll
-C:\Users\juanluca\Desktop\JUAN\MCP\AgentAPI\bin\Debug\net9.0\prompt-queue.json
 C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentAPI\bin\Debug\net9.0\AgentAPI.exe
 C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentAPI\bin\Debug\net9.0\AgentAPI.dll
 C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentAPI\bin\Debug\net9.0\Microsoft.AspNetCore.Authorization.dll
@@ -395,3 +394,4 @@ C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentAPI\obj\Debug\net9.0\refint\A
 C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentAPI\obj\Debug\net9.0\AgentAPI.pdb
 C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentAPI\obj\Debug\net9.0\AgentAPI.genruntimeconfig.cache
 C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentAPI\obj\Debug\net9.0\ref\AgentAPI.dll
+C:\Users\juanluca\Desktop\JUAN\MCP\AgentAPI\obj\Debug\net9.0\AgentAPI.sourcelink.json

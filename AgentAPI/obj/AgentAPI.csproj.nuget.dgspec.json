@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentAPI\\AgentAPI.csproj": {}
+    "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\AgentAPI\\AgentAPI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentAPI\\AgentAPI.csproj": {
+    "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\AgentAPI\\AgentAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentAPI\\AgentAPI.csproj",
+        "projectUniqueName": "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\AgentAPI\\AgentAPI.csproj",
         "projectName": "AgentAPI",
-        "projectPath": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentAPI\\AgentAPI.csproj",
-        "packagesPath": "C:\\Users\\Juan\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\AgentAPI\\obj\\",
+        "projectPath": "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\AgentAPI\\AgentAPI.csproj",
+        "packagesPath": "C:\\Users\\juanluca\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\AgentAPI\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Juan\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\juanluca\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -32,11 +32,11 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\Infraestructura.csproj": {
-                "projectPath": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\Infraestructura.csproj"
+              "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\Infraestructura\\Infraestructura.csproj": {
+                "projectPath": "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\Infraestructura\\Infraestructura.csproj"
               },
-              "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Shared\\Shared.csproj": {
-                "projectPath": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Shared\\Shared.csproj"
+              "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\Shared\\Shared.csproj": {
+                "projectPath": "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\Shared\\Shared.csproj"
               }
             }
           }
@@ -99,24 +99,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\Infraestructura.csproj": {
+    "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\Infraestructura\\Infraestructura.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\Infraestructura.csproj",
+        "projectUniqueName": "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\Infraestructura\\Infraestructura.csproj",
         "projectName": "Infraestructura",
-        "projectPath": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\Infraestructura.csproj",
-        "packagesPath": "C:\\Users\\Juan\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Infraestructura\\obj\\",
+        "projectPath": "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\Infraestructura\\Infraestructura.csproj",
+        "packagesPath": "C:\\Users\\juanluca\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\Infraestructura\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Juan\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\juanluca\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -131,8 +131,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Shared\\Shared.csproj": {
-                "projectPath": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Shared\\Shared.csproj"
+              "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\Shared\\Shared.csproj": {
+                "projectPath": "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\Shared\\Shared.csproj"
               }
             }
           }
@@ -178,24 +178,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Shared\\Shared.csproj": {
+    "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\Shared\\Shared.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Shared\\Shared.csproj",
+        "projectUniqueName": "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\Shared\\Shared.csproj",
         "projectName": "Shared",
-        "projectPath": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Shared\\Shared.csproj",
-        "packagesPath": "C:\\Users\\Juan\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Juan\\Documents\\GitHub\\TERMINATOR-MCP\\Shared\\obj\\",
+        "projectPath": "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\Shared\\Shared.csproj",
+        "packagesPath": "C:\\Users\\juanluca\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\juanluca\\Desktop\\JUAN\\MCP\\Shared\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Juan\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\juanluca\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -243,7 +243,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

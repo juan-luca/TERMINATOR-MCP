@@ -171,7 +171,6 @@ C:\Users\juanluca\Desktop\JUAN\MCP\AgentWorker\obj\Debug\net9.0\refint\AgentWork
 C:\Users\juanluca\Desktop\JUAN\MCP\AgentWorker\obj\Debug\net9.0\AgentWorker.pdb
 C:\Users\juanluca\Desktop\JUAN\MCP\AgentWorker\obj\Debug\net9.0\AgentWorker.genruntimeconfig.cache
 C:\Users\juanluca\Desktop\JUAN\MCP\AgentWorker\obj\Debug\net9.0\ref\AgentWorker.dll
-C:\Users\juanluca\Desktop\JUAN\MCP\AgentWorker\bin\Debug\net9.0\prompt-queue.json
 C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\bin\Debug\net9.0\AgentWorker.exe
 C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\bin\Debug\net9.0\AgentWorker.dll
 C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\bin\Debug\net9.0\Microsoft.Extensions.Configuration.dll
@@ -348,3 +347,5 @@ C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\obj\Debug\net9.0\Agent
 C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\obj\Debug\net9.0\AgentWorker.genruntimeconfig.cache
 C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\obj\Debug\net9.0\ref\AgentWorker.dll
 C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\AgentWorker\bin\Debug\net9.0\corrected_errors.json
+C:\Users\juanluca\Desktop\JUAN\MCP\AgentWorker\bin\Debug\net9.0\corrected_errors.json
+C:\Users\juanluca\Desktop\JUAN\MCP\AgentWorker\obj\Debug\net9.0\AgentWorker.sourcelink.json

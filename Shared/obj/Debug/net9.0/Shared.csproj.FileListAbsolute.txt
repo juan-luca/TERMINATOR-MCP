@@ -21,3 +21,4 @@ C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\Shared\obj\Debug\net9.0\Shared.dll
 C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\Shared\obj\Debug\net9.0\refint\Shared.dll
 C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\Shared\obj\Debug\net9.0\Shared.pdb
 C:\Users\Juan\Documents\GitHub\TERMINATOR-MCP\Shared\obj\Debug\net9.0\ref\Shared.dll
+C:\Users\juanluca\Desktop\JUAN\MCP\Shared\obj\Debug\net9.0\Shared.sourcelink.json

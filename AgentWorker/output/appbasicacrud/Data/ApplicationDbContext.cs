@@ -4,21 +4,21 @@ using AppBasicaCRUD.Models;
 namespace AppBasicaCRUD.Data
 {
     /// <summary>
-    /// Represents the application database context.
+    /// Clase que representa el contexto de la base de datos de la aplicación.
     /// </summary>
     public class ApplicationDbContext : DbContext
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApplicationDbContext"/> class.
+        /// Constructor de la clase ApplicationDbContext.
         /// </summary>
-        /// <param name="options">The options to be used by the <see cref="DbContext"/>.</param>
+        /// <param name="options">Opciones de configuración del contexto.</param>
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
         }
 
         /// <summary>
-        /// Gets or sets the DbSet of Products.
+        /// Representa la tabla de Productos en la base de datos.
         /// </summary>
         public DbSet<Producto> Productos { get; set; }
     }

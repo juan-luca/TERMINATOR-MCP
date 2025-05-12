@@ -8,8 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
 
+// Configurar ApplicationDbContext con base de datos en memoria
 builder.Services.AddDbContext<ApplicationDbContext>(opt => opt.UseInMemoryDatabase("ProductosDb"));
 
 var app = builder.Build();

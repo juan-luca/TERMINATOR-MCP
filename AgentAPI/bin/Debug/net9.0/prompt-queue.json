@@ -1,6 +1,0 @@
-[
-  {
-    "Titulo": "BlazorNotas",
-    "Descripcion": "Quiero una app Blazor que permita escribir notas, verlas, editarlas y eliminarlas. Quiero que tenga login de usuario, persistencia de notas en base de datos y opci\u00F3n de exportar a PDF."
-  }
-]

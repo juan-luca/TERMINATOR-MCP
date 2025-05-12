@@ -4,22 +4,20 @@
 
 <h3>Crear Producto</h3>
 
-<EditForm Model="@producto" OnValidSubmit="@HandleValidSubmit">
+<EditForm Model="@producto" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <div class="form-group">
-        <label for="Nombre">Nombre:</label>
+        <label for="Nombre">Nombre</label>
         <InputText id="Nombre" class="form-control" @bind-Value="producto.Nombre" />
     </div>
-
     <div class="form-group">
-        <label for="Descripcion">Descripción:</label>
+        <label for="Descripcion">Descripción</label>
         <InputText id="Descripcion" class="form-control" @bind-Value="producto.Descripcion" />
     </div>
-
     <div class="form-group">
-        <label for="Precio">Precio:</label>
+        <label for="Precio">Precio</label>
         <InputNumber id="Precio" class="form-control" @bind-Value="producto.Precio" />
     </div>
 
@@ -29,7 +27,7 @@
 @code {
     private Producto producto = new Producto();
 
-    private async Task HandleValidSubmit()
+    private async Task OnValidSubmit()
     {
         dbContext.Productos.Add(producto);
         await dbContext.SaveChangesAsync();
