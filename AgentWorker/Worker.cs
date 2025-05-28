@@ -100,19 +100,17 @@ namespace AgentWorker
 
                     if (seGeneroCodigo && !stoppingToken.IsCancellationRequested)
                     {
-                        // --- Completeness Check (Sigue deshabilitado por ahora) ---
-                        /*
-                        _logger.LogInformation("🔍 (DISABLED) Verificando completitud del código generado para '{Titulo}'...", prompt.Titulo);
+                        // --- Completeness Check ---
+                        _logger.LogInformation("🔍 Verificando completitud del código generado para '{Titulo}'...", prompt.Titulo);
                         try
                         {
                             // EnsureCodeCompletenessAsync espera Shared.Prompt
                             var archivosRegenerados = await _completenessChecker.EnsureCodeCompletenessAsync(rutaProyecto, prompt, backlog);
                             if (archivosRegenerados.Any()) { _logger.LogInformation("🔄 {Count} archivos fueron regenerados/completados durante la verificación.", archivosRegenerados.Count); }
-                            else { _logger.LogInformation("✅ Verificación completitud: No se necesitaron regeneraciones.", prompt.Titulo); }
+                            else { _logger.LogInformation("✅ Verificación completitud: No se necesitaron regeneraciones para '{Titulo}'.", prompt.Titulo); }
                         }
                         catch (Exception ex) { _logger.LogError(ex, "❌ Error durante la verificación de completitud para {RutaProyecto}.", rutaProyecto); }
-                        */
-                        // --- End Disabled Step ---
+                        // --- End Completeness Check ---
 
                         _logger.LogInformation("🏁 Fin de generación para '{Titulo}'. Iniciando compilación/corrección...", prompt.Titulo);
                         await CorregirYRecompilarAsync(rutaProyecto);

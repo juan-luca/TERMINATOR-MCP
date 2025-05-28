@@ -99,9 +99,10 @@ namespace Infraestructura
             string rawCodigoGenerado = "";
             string rutaCompletaArchivo = "";
             string nombreArchivo = "";
+            string tipoCodigo = "C#"; // Default
             try
             {
-                string tipoCodigo = InferirTipoCodigo(tarea, targetRelativePath);
+                tipoCodigo = InferirTipoCodigo(tarea, targetRelativePath);
                 if (!rutaExplicita)
                 {
                     _logger.LogDebug("Ejecutando inferencia ruta/nombre CREACIÓN...");
@@ -132,10 +133,11 @@ namespace Infraestructura
                      _logger.LogError(ex, "❌ Error Gemini CREACIÓN '{File}'.", nombreArchivo);
                      return;
                 }
-                if (string.IsNullOrWhiteSpace(codigoGenerado))
+
+                if (!EsCodigoPlausible(codigoGenerado, nombreArchivo, tipoCodigo)) // Check includes null/whitespace
                 {
-                     _logger.LogWarning("⚠️ Código generado CREACIÓN '{File}' VACÍO. Omitido.", nombreArchivo);
-                     return;
+                    _logger.LogWarning("⚠️ Código generado CREACIÓN '{File}' NO PLAUSIBLE o vacío. Omitido. Primeras 500 chars del contenido problemático:\n{CodigoProblematico}", nombreArchivo, string.IsNullOrEmpty(codigoGenerado) ? "[VACIO]" : codigoGenerado.Substring(0, Math.Min(500, codigoGenerado.Length)));
+                    return; // Skip writing
                 }
 
                 string? directoryPath = Path.GetDirectoryName(rutaCompletaArchivo);
@@ -184,16 +186,23 @@ namespace Infraestructura
                   return;
              }
 
-             if (string.IsNullOrWhiteSpace(modifiedContentClean))
-             {
-                  _logger.LogWarning("⚠️ Código modificado '{File}' VACÍO. No se sobrescribe.", Path.GetFileName(filePath));
-                  return;
-             }
+            string fileTypeForPlausibility = Path.GetExtension(filePath).ToLowerInvariant() == ".cs" ? "C#" : "Razor";
+            if (!EsCodigoPlausible(modifiedContentClean, Path.GetFileName(filePath), fileTypeForPlausibility)) // Check includes null/whitespace
+            {
+                _logger.LogWarning("⚠️ Código modificado '{File}' NO PLAUSIBLE o vacío. No se sobrescribe. Primeras 500 chars del contenido problemático:\n{CodigoProblematico}", Path.GetFileName(filePath), string.IsNullOrEmpty(modifiedContentClean) ? "[VACIO]" : modifiedContentClean.Substring(0, Math.Min(500, modifiedContentClean.Length)));
+                return; // Skip writing
+            }
 
              // Optional validation: Check if the modified code significantly differs in length
-             if (Math.Abs(originalContent.Length - modifiedContentClean.Length) > originalContent.Length * 0.75 && originalContent.Length > 50)
+             // Make sure originalContent is not empty before calculating percentage difference to avoid division by zero or skewed results.
+             if (originalContent.Length > 50 && Math.Abs(originalContent.Length - modifiedContentClean.Length) > originalContent.Length * 0.75)
              {
-                  _logger.LogWarning("⚠️ Código modificado {File} difiere mucho (Original: {OrigLen}, Nuevo: {NewLen}). NO SE SOBREESCRIBIRÁ.", Path.GetFileName(filePath), originalContent.Length, modifiedContentClean.Length);
+                  _logger.LogWarning("⚠️ Código modificado {File} difiere mucho en longitud (Original: {OrigLen}, Nuevo: {NewLen}). NO SE SOBREESCRIBIRÁ.", Path.GetFileName(filePath), originalContent.Length, modifiedContentClean.Length);
+                  return;
+             }
+              if (string.IsNullOrWhiteSpace(originalContent) && modifiedContentClean.Length > 10000) // Heuristic: If original was empty/small and new is huge
+             {
+                  _logger.LogWarning("⚠️ Código modificado {File} es muy grande ({NewLen} chars) partiendo de un original vacío/pequeño. NO SE SOBREESCRIBIRÁ.", Path.GetFileName(filePath), modifiedContentClean.Length);
                   return;
              }
 
@@ -225,13 +234,23 @@ Código Original del Archivo:
 {originalCode}
 ```
 Instrucciones PRECISAS:
-Aplica SOLAMENTE el cambio descrito en la TAREA ESPECÍFICA al CÓDIGO ORIGINAL.
-Si la tarea es 'Registrar ServicioX en Program.cs', AÑADE builder.Services.AddScoped<IServicioX, ServicioX>(); cerca de otros registros de servicio.
-Si la tarea es 'Añadir enlace Y en NavMenu.razor', AÑADE <div class=""nav-item px-3""><NavLink class=""nav-link"" href=""/Y"">...</NavLink></div> dentro de <nav class=""flex-column"">.
-Devuelve ÚNICAMENTE el código fuente COMPLETO y MODIFICADO del archivo '{fileName}'.
-ASEGÚRATE de que TODO el código original que NO necesita cambiarse se mantenga EXACTAMENTE IGUAL.
-NO incluyas explicaciones, introducciones, resúmenes de cambios ni el código original sin modificar.
-NO uses bloques de markdown como csharp o html alrededor del código final. Solo el contenido puro.";
+1.  Aplica SOLAMENTE el cambio descrito en la TAREA ESPECÍFICA al CÓDIGO ORIGINAL.
+2.  **Para Program.cs:**
+    *   Si la tarea es registrar un servicio, localiza la sección de registro de servicios (ej. `// Add services to the container.`) y añade la línea `builder.Services.AddScoped<INombreInterfaz, NombreClase>();` o `builder.Services.AddSingleton<...>();` etc., según corresponda.
+    *   Si la tarea es registrar un DbContext, añade `builder.Services.AddDbContext<NombreDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString(""DefaultConnection"")));` (o el proveedor que aplique). Asegúrate que el `using Microsoft.EntityFrameworkCore;` esté presente.
+    *   Coloca el nuevo registro de servicio de forma lógica con otros registros similares.
+3.  **Para NavMenu.razor (o cualquier archivo .razor de menú):**
+    *   Si la tarea es añadir un enlace de navegación, localiza el elemento `<nav class=""flex-column"">` o una lista similar de `NavLink`.
+    *   Añade un nuevo `<div class=""nav-item px-3""><NavLink class=""nav-link"" href=""nueva-ruta""><span class=""oi oi-nombre-icono"" aria-hidden=""true""></span> TextoEnlace</NavLink></div>`. Adapta el icono y el texto según la tarea.
+4.  **Para cualquier otro archivo:**
+    *   Identifica cuidadosamente la sección de código que necesita ser modificada según la TAREA ESPECÍFICA.
+    *   Realiza únicamente los cambios solicitados.
+5.  **MUY IMPORTANTE:** Devuelve ÚNICAMENTE el código fuente COMPLETO y MODIFICADO del archivo '{fileName}'.
+6.  ASEGÚRATE de que TODO el código original que NO necesita cambiarse se mantenga EXACTAMENTE IGUAL.
+7.  Incluye TODOS los 'using' necesarios si la modificación los introduce.
+8.  El código modificado debe ser COMPILABLE y seguir las mejores prácticas de .NET 8 y Blazor.
+9.  NO incluyas explicaciones, introducciones, resúmenes de cambios, notas, advertencias, ni el código original sin modificar como referencia.
+10. NO uses bloques de markdown (como ```csharp, ```html o ```razor) alrededor del código final. Solo el contenido puro del archivo.";
         }
 
         // Método para generar archivos base usando Shared.Prompt
@@ -730,28 +749,90 @@ a, .btn-link {{
             string formatoCodigo = tipoCodigo == "Razor" ? "un componente Blazor (.razor)" : "una clase C# (.cs)";
             string nombreArchivo = targetRelativePath != null ? Path.GetFileName(targetRelativePath) : "(Nombre a inferir)";
             string instruccionesAdicionales = "";
+
             if (EsTareaCrud(tareaEspecifica))
             {
                 instruccionesAdicionales = @$"
-            Asegúrate de implementar las operaciones CRUD estándar (Crear, Leer/Listar, Leer por ID, Actualizar, Eliminar) para la entidad mencionada.
-            Utiliza buenas prácticas como DTOs si es aplicable, e inyecta dependencias necesarias (como DbContext o servicios).
-            Considera validaciones básicas en los modelos o DTOs.
-            Si es un componente Razor, incluye la lógica @code necesaria para interactuar con los servicios o el backend.
-            Si es una clase C#, incluye los métodos correspondientes a cada operación CRUD.";
+            **Instrucciones Detalladas para Archivo: '{nombreArchivo}' ({tipoCodigo})**
+            La TAREA ESPECÍFICA es: '{tareaEspecifica}'.
+            Basado en esto, genera el código COMPLETO y FUNCIONAL.
+
+            **Si es un Modelo C# (.cs):**
+            - Define una clase pública con el nombre apropiado (ej. 'public class NombreEntidad').
+            - Incluye propiedades públicas con tipos de datos C# correctos (ej. 'public int Id {{ get; set; }}', 'public string Nombre {{ get; set; }}').
+            - Añade DataAnnotations necesarias (ej. '[Key]', '[Required]', '[StringLength(100)]') de 'System.ComponentModel.DataAnnotations'.
+            - Incluye un constructor vacío si es necesario para EF Core.
+            - Asegúrate de tener todos los 'using' necesarios (ej. 'using System.ComponentModel.DataAnnotations;').
+
+            **Si es un DbContext C# (.cs) (ej. 'Data/ApplicationDbContext.cs'):**
+            - Hereda de 'Microsoft.EntityFrameworkCore.DbContext'.
+            - Incluye un constructor que acepte 'DbContextOptions<ApplicationDbContext>'.
+            - Define propiedades 'DbSet<NombreEntidad> NombreEntidades {{ get; set; }}' para cada entidad.
+            - Si es necesario, sobreescribe 'OnModelCreating(ModelBuilder modelBuilder)' para configuraciones adicionales (ej. relaciones, claves compuestas).
+            - Asegúrate de tener todos los 'using' necesarios (ej. 'using Microsoft.EntityFrameworkCore;', 'using NombreProyecto.Models;').
+
+            **Si es una Interfaz de Servicio C# (.cs) (ej. 'Services/IClienteService.cs'):**
+            - Define una interfaz pública (ej. 'public interface IClienteService').
+            - Declara métodos para operaciones CRUD (ej. 'Task<List<Cliente>> GetAllClientesAsync();', 'Task<Cliente> GetClienteByIdAsync(int id);', 'Task CreateClienteAsync(Cliente cliente);', 'Task UpdateClienteAsync(Cliente cliente);', 'Task DeleteClienteAsync(int id);').
+            - Utiliza los modelos del proyecto en las firmas de los métodos.
+            - Asegúrate de tener todos los 'using' necesarios (ej. 'using NombreProyecto.Models;').
+
+            **Si es una Clase de Servicio C# (.cs) (ej. 'Services/ClienteService.cs'):**
+            - Implementa la interfaz de servicio correspondiente (ej. 'public class ClienteService : IClienteService').
+            - Inyecta el DbContext (ej. 'private readonly ApplicationDbContext _context;') a través del constructor.
+            - Implementa todos los métodos de la interfaz, usando el DbContext para interactuar con la base de datos.
+            - Incluye manejo básico de errores (try-catch) y logging si es posible.
+            - Asegúrate de tener todos los 'using' necesarios (ej. 'using Microsoft.EntityFrameworkCore;', 'using NombreProyecto.Models;', 'using NombreProyecto.Data;').
+
+            **Si es un Componente/Página Razor (.razor) para CRUD:**
+            - **General:**
+                - Usa '@page ""/ruta-correcta""' para páginas.
+                - Incluye '@using NombreProyecto.Models', '@using NombreProyecto.Services'.
+                - Inyecta servicios necesarios (ej. '@inject IClienteService ClienteService').
+            - **Para Listas (ej. 'Pages/Clientes/Index.razor'):**
+                - Muestra los datos en una tabla HTML.
+                - Incluye botones/enlaces para 'Crear Nuevo', 'Editar', 'Detalles', 'Eliminar' para cada item.
+                - En '@code':
+                    - Define 'private List<Cliente> clientes;'
+                    - En 'OnInitializedAsync()', llama al servicio para obtener todos los clientes (ej. 'clientes = await ClienteService.GetAllClientesAsync();').
+                    - Métodos para navegar a crear/editar/eliminar páginas.
+            - **Para Formularios (Crear/Editar) (ej. 'Pages/Clientes/Create.razor', 'Pages/Clientes/Edit.razor'):**
+                - Usa '<EditForm Model=""@cliente"" OnValidSubmit=""HandleSubmit"">'
+                - Incluye '<DataAnnotationsValidator />' y '<ValidationSummary />'.
+                - Usa componentes de entrada como '<InputText @bind-Value=""cliente.Nombre"" />', etc., para cada propiedad del modelo.
+                - Botón de submit.
+                - En '@code':
+                    - Define '[Parameter] public int Id {{ get; set; }}' (para Editar/Detalles).
+                    - Define 'private Cliente cliente = new Cliente();'
+                    - En 'OnInitializedAsync()' (para Editar), carga el cliente por Id ('cliente = await ClienteService.GetClienteByIdAsync(Id);').
+                    - Método 'HandleSubmit()': Llama al servicio correspondiente (CreateAsync o UpdateAsync).
+                    - Navegación después de la operación ('NavigationManager.NavigateTo(""/clientes"");').
+            - **Para Páginas de Confirmación (Eliminar) (ej. 'Pages/Clientes/Delete.razor'):**
+                - Muestra detalles del item a eliminar.
+                - Botón de confirmación y cancelación.
+                - En '@code': Llama al servicio 'DeleteAsync' y navega.
+            - **Para Páginas de Detalles (ej. 'Pages/Clientes/Details.razor'):**
+                - Muestra todas las propiedades del modelo.
+                - Enlace para volver a la lista o editar.
+";
             }
+
             string rutaInfo = targetRelativePath != null ? $"para el archivo '{targetRelativePath}'" : $"que se guardará como '{nombreArchivo}' (aproximadamente)";
             return @$"Contexto General del Proyecto (Prompt Original):
 {promptOriginal.Descripcion}
+
 Tarea Específica a Implementar:
 {tareaEspecifica}
-Instrucciones:
-Genera el código fuente COMPLETO {formatoCodigo} {rutaInfo} que cumpla con la TAREA ESPECÍFICA.
-El código debe ser funcional, autocontenido para este archivo, y seguir las convenciones de {tipoCodigo} y .NET 8 / Blazor.
-Incluye los using necesarios.
-Incluye comentarios XML básicos (<summary>) para clases y métodos públicos (si es C#).
-Implementa manejo básico de errores donde sea crítico (ej. try-catch en llamadas a BD o APIs externas).
+
+Instrucciones Generales para la Generación de Código:
+1.  Genera el código fuente COMPLETO y FUNCIONAL para {formatoCodigo} {rutaInfo} que cumpla con la TAREA ESPECÍFICA.
+2.  El código debe ser COMPILABLE y estar listo para usarse en un proyecto .NET 8 Blazor Server.
+3.  Incluye TODOS los 'using' necesarios al principio del archivo.
+4.  Añade comentarios XML (<summary>...</summary>) para todas las clases y métodos públicos (si es C#). Para código Razor, añade comentarios C# (// o /* */) para explicar lógica compleja en el bloque @code.
+5.  Sigue las mejores prácticas de codificación de .NET 8 y Blazor.
+6.  Implementa manejo básico de errores (try-catch) donde sea crítico (ej. llamadas a base de datos, servicios externos).
 {instruccionesAdicionales}
-Devuelve ÚNICAMENTE el código fuente completo del archivo solicitado. No incluyas explicaciones, introducciones ni texto adicional antes o después del código. No uses bloques de markdown como csharp o razor.";
+RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correcto para el archivo solicitado. NO incluyas NINGUNA explicación, introducción, resumen, notas, advertencias, ni texto adicional antes o después del bloque de código. NO uses bloques de markdown (como ```csharp, ```html o ```razor) alrededor del código final. Solo el contenido puro del archivo.";
         }
 
         // --- Métodos Helper (sin cambios funcionales) ---
@@ -828,14 +909,163 @@ Devuelve ÚNICAMENTE el código fuente completo del archivo solicitado. No inclu
 
         private string LimpiarCodigoGemini(string codigo)
         {
-             if (string.IsNullOrWhiteSpace(codigo)) return "";
-             var lines = codigo.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None)
-                             .Select(l => l.TrimEnd())
-                             .ToList();
-             // Remove markdown code fences if present
-             if (lines.Count > 0 && lines[0].Trim().StartsWith("```")) { lines.RemoveAt(0); }
-             if (lines.Count > 0 && lines[^1].Trim() == "```") { lines.RemoveAt(lines.Count - 1); }
-             return string.Join(Environment.NewLine, lines).Trim();
+            if (string.IsNullOrWhiteSpace(codigo)) return "";
+
+            var lines = codigo.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None).ToList();
+
+            // 1. Remove markdown code fences
+            // Ensure there are lines to check before accessing Last()
+            if (lines.Any() && lines[0].Trim().StartsWith("```")) { lines.RemoveAt(0); }
+            if (lines.Any() && lines.Last().Trim() == "```") { lines.RemoveAt(lines.Count - 1); }
+
+
+            // 2. Remove common introductory/concluding phrases (conservative approach)
+            string[] commonPhrases = {
+                "here's the code", "here is the code", "okay, here is the", "sure, here is the", "certainly, here is the",
+                "this is the code", "the code is as follows", "find the code below", "below is the code",
+                "this code should work", "let me know if you have questions", "hope this helps", "hope this is helpful",
+                "this is just an example", "you might need to adjust this", "this implements", "this file contains",
+                "the generated code:", "generated code:", "code:", "c# code:", "razor code:", "html code:",
+                "```csharp", "```c#", "```razor", "```html", "```xml", "```json",
+                "here is the updated code", "here's the updated code", "this is the modified code",
+                "i've made the requested changes", "the changes are as follows"
+            };
+
+            // Check and remove from the beginning
+            for (int i = 0; i < 3 && lines.Any(); i++) // Check first 3 lines
+            {
+                var trimmedLowerLine = lines[0].Trim().ToLowerInvariant();
+                bool removed = false;
+                foreach (var phrase in commonPhrases)
+                {
+                    if (trimmedLowerLine.StartsWith(phrase) || trimmedLowerLine.EndsWith(phrase)) // Also check if the line *is* the phrase
+                    {
+                        _logger.LogTrace("LimpiarCodigoGemini: Removiendo línea introductoria: '{Line}'", lines[0]);
+                        lines.RemoveAt(0);
+                        removed = true;
+                        break;
+                    }
+                }
+                if (!removed) break; // Stop if a line is not a common phrase
+            }
+
+            // Check and remove from the end
+            for (int i = 0; i < 3 && lines.Any(); i++) // Check last 3 lines
+            {
+                var trimmedLowerLine = lines.Last().Trim().ToLowerInvariant();
+                 bool removed = false;
+                foreach (var phrase in commonPhrases)
+                {
+                    // For concluding remarks, 'contains' might be too broad, stick to exact or starts/ends with
+                    if (trimmedLowerLine.StartsWith(phrase) || trimmedLowerLine.EndsWith(phrase) || trimmedLowerLine == phrase)
+                    {
+                        _logger.LogTrace("LimpiarCodigoGemini: Removiendo línea conclusiva: '{Line}'", lines.Last());
+                        lines.RemoveAt(lines.Count - 1);
+                        removed = true;
+                        break;
+                    }
+                }
+                 if (!removed) break; // Stop if a line is not a common phrase
+            }
+            
+            var processedLines = lines.Select(l => l.TrimEnd()).ToList();
+            // Remove empty lines from start
+            while (processedLines.Any() && string.IsNullOrWhiteSpace(processedLines[0])) 
+            { 
+                processedLines.RemoveAt(0); 
+            }
+            // Remove empty lines from end
+            while (processedLines.Any() && string.IsNullOrWhiteSpace(processedLines.Last())) 
+            { 
+                processedLines.RemoveAt(processedLines.Count - 1); 
+            }
+
+            return string.Join(Environment.NewLine, processedLines).Trim();
+        }
+
+        private bool EsCodigoPlausible(string codigo, string fileName, string tipoCodigo)
+        {
+            if (string.IsNullOrWhiteSpace(codigo))
+            {
+                _logger.LogWarning("⚠️ Plausibility check failed for '{FileName}': Código está vacío o es solo espacio en blanco.", fileName);
+                return false;
+            }
+
+            var lines = codigo.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            var nonCommentLines = lines.Where(l =>
+                !l.TrimStart().StartsWith("//") && // C#, C++ style comments
+                !l.TrimStart().StartsWith("/*") && // Start of C-style multi-line comment
+                !(l.TrimStart().StartsWith("*") && !l.TrimStart().StartsWith("*/") && lines.Any(prevL => prevL.TrimStart().StartsWith("/*") && !prevL.TrimEnd().EndsWith("*/"))) && // Middle of C-style multi-line comment
+                !l.TrimStart().StartsWith("@*") && // Razor comment start
+                !(l.TrimStart().StartsWith("*") && !l.TrimStart().StartsWith("*@") && lines.Any(prevL => prevL.TrimStart().StartsWith("@*") && !prevL.TrimEnd().EndsWith("*@"))) // Middle of Razor comment
+            ).Select(l => l.Trim()).Where(l => !string.IsNullOrEmpty(l)).ToList();
+
+
+            if (nonCommentLines.Count == 0) 
+            {
+                _logger.LogWarning("⚠️ Plausibility check failed for '{FileName}': No hay líneas de código que no sean comentarios o vacías. Total lines: {TotalLines}", fileName, lines.Length);
+                return false;
+            }
+
+            if (tipoCodigo == "C#")
+            {
+                bool hasNamespace = nonCommentLines.Any(l => Regex.IsMatch(l, @"^\s*namespace\s+[\w\.]+"));
+                bool hasTypeDefinition = nonCommentLines.Any(l => Regex.IsMatch(l, @"\b(class|interface|enum|struct|record)\s+[\w_]+"));
+                bool hasBraces = codigo.Contains("{") && codigo.Contains("}");
+
+                if (!hasNamespace) _logger.LogWarning("⚠️ Plausibility check C# ('{FileName}'): Parece faltar 'namespace'.", fileName);
+                if (!hasTypeDefinition) _logger.LogWarning("⚠️ Plausibility check C# ('{FileName}'): Parece faltar definición de tipo (class, interface, etc.).", fileName);
+                if (!hasBraces) _logger.LogWarning("⚠️ Plausibility check C# ('{FileName}'): Parece faltar llaves '{{' o '}}'.", fileName);
+                
+                if (!hasNamespace && !hasTypeDefinition && nonCommentLines.Count < 5) { 
+                     _logger.LogWarning("⚠️ Plausibility check C# ('{FileName}') FAILED: Muy pocas líneas y faltan namespace y definición de tipo.", fileName);
+                     return false;
+                }
+                if (!hasTypeDefinition && nonCommentLines.Count < 3) { 
+                     _logger.LogWarning("⚠️ Plausibility check C# ('{FileName}') FAILED: Muy pocas líneas y falta definición de tipo.", fileName);
+                     return false;
+                }
+                 if (!hasBraces && nonCommentLines.Count < 2) { 
+                     _logger.LogWarning("⚠️ Plausibility check C# ('{FileName}') FAILED: Muy pocas líneas y faltan llaves.", fileName);
+                     return false;
+                }
+            }
+            else if (tipoCodigo == "Razor")
+            {
+                bool hasHtml = nonCommentLines.Any(l => l.Contains("<") && l.Contains(">") && !l.StartsWith("@")); 
+                bool hasAtDirectives = nonCommentLines.Any(l => l.StartsWith("@") && !l.StartsWith("@@")); 
+                bool hasCodeBlockContent = false;
+                var codeBlockIndex = nonCommentLines.FindIndex(l => l.Trim() == "@code");
+                if (codeBlockIndex != -1 && codeBlockIndex < nonCommentLines.Count -1)
+                {
+                    hasCodeBlockContent = nonCommentLines.Skip(codeBlockIndex + 1).Any(l => l.Trim() != "{" && l.Trim() != "}" && !string.IsNullOrWhiteSpace(l));
+                }
+
+                if (!hasHtml && !hasAtDirectives && !hasCodeBlockContent)
+                {
+                    _logger.LogWarning("⚠️ Plausibility check Razor ('{FileName}') FAILED: No se encontraron tags HTML, ni directivas '@' significativas, ni contenido en bloque '@code'.", fileName);
+                    return false;
+                }
+                
+                bool isLikelyPage = fileName.Contains("Page", StringComparison.OrdinalIgnoreCase) || 
+                                    Regex.IsMatch(fileName, @"(Index|Create|Edit|Details|Delete|List)\.razor", RegexOptions.IgnoreCase);
+                if (isLikelyPage && !nonCommentLines.Any(l => l.StartsWith("@page")))
+                {
+                     _logger.LogWarning("⚠️ Plausibility check Razor ('{FileName}'): Parece una página pero no tiene directiva '@page'. Podría ser un error.", fileName);
+                }
+                 if (nonCommentLines.Count < 1 && !hasHtml && !hasCodeBlockContent) 
+                {
+                     _logger.LogWarning("⚠️ Plausibility check Razor ('{FileName}') FAILED: Muy pocas líneas ({Count}) sin HTML claro o contenido en bloque de código.", fileName, nonCommentLines.Count);
+                    return false;
+                }
+            }
+            else
+            {
+                _logger.LogWarning("⚠️ Plausibility check para '{FileName}': Tipo de código '{TipoCodigo}' no reconocido para validación específica. Se omite validación detallada.", fileName, tipoCodigo);
+            }
+
+            _logger.LogInformation("✅ Plausibility check PASSED for '{FileName}'. Non-comment lines: {Count}", fileName, nonCommentLines.Count);
+            return true;
         }
 
         private string InferirTipoCodigo(string tarea, string? targetRelativePath)
@@ -1094,12 +1324,6 @@ Devuelve ÚNICAMENTE el código fuente completo del archivo solicitado. No inclu
 
             return result;
         }
-
-
         #endregion
     }
-
-
-  
-
-} // End namespace Infraestructura
+}
