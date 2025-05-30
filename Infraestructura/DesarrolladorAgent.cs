@@ -967,17 +967,17 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
                 }
                  if (!removed) break; // Stop if a line is not a common phrase
             }
-            
+
             var processedLines = lines.Select(l => l.TrimEnd()).ToList();
             // Remove empty lines from start
-            while (processedLines.Any() && string.IsNullOrWhiteSpace(processedLines[0])) 
-            { 
-                processedLines.RemoveAt(0); 
+            while (processedLines.Any() && string.IsNullOrWhiteSpace(processedLines[0]))
+            {
+                processedLines.RemoveAt(0);
             }
             // Remove empty lines from end
-            while (processedLines.Any() && string.IsNullOrWhiteSpace(processedLines.Last())) 
-            { 
-                processedLines.RemoveAt(processedLines.Count - 1); 
+            while (processedLines.Any() && string.IsNullOrWhiteSpace(processedLines.Last()))
+            {
+                processedLines.RemoveAt(processedLines.Count - 1);
             }
 
             return string.Join(Environment.NewLine, processedLines).Trim();
@@ -1001,7 +1001,7 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
             ).Select(l => l.Trim()).Where(l => !string.IsNullOrEmpty(l)).ToList();
 
 
-            if (nonCommentLines.Count == 0) 
+            if (nonCommentLines.Count == 0)
             {
                 _logger.LogWarning("⚠️ Plausibility check failed for '{FileName}': No hay líneas de código que no sean comentarios o vacías. Total lines: {TotalLines}", fileName, lines.Length);
                 return false;
@@ -1016,24 +1016,24 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
                 if (!hasNamespace) _logger.LogWarning("⚠️ Plausibility check C# ('{FileName}'): Parece faltar 'namespace'.", fileName);
                 if (!hasTypeDefinition) _logger.LogWarning("⚠️ Plausibility check C# ('{FileName}'): Parece faltar definición de tipo (class, interface, etc.).", fileName);
                 if (!hasBraces) _logger.LogWarning("⚠️ Plausibility check C# ('{FileName}'): Parece faltar llaves '{{' o '}}'.", fileName);
-                
-                if (!hasNamespace && !hasTypeDefinition && nonCommentLines.Count < 5) { 
+
+                if (!hasNamespace && !hasTypeDefinition && nonCommentLines.Count < 5) {
                      _logger.LogWarning("⚠️ Plausibility check C# ('{FileName}') FAILED: Muy pocas líneas y faltan namespace y definición de tipo.", fileName);
                      return false;
                 }
-                if (!hasTypeDefinition && nonCommentLines.Count < 3) { 
+                if (!hasTypeDefinition && nonCommentLines.Count < 3) {
                      _logger.LogWarning("⚠️ Plausibility check C# ('{FileName}') FAILED: Muy pocas líneas y falta definición de tipo.", fileName);
                      return false;
                 }
-                 if (!hasBraces && nonCommentLines.Count < 2) { 
+                 if (!hasBraces && nonCommentLines.Count < 2) {
                      _logger.LogWarning("⚠️ Plausibility check C# ('{FileName}') FAILED: Muy pocas líneas y faltan llaves.", fileName);
                      return false;
                 }
             }
             else if (tipoCodigo == "Razor")
             {
-                bool hasHtml = nonCommentLines.Any(l => l.Contains("<") && l.Contains(">") && !l.StartsWith("@")); 
-                bool hasAtDirectives = nonCommentLines.Any(l => l.StartsWith("@") && !l.StartsWith("@@")); 
+                bool hasHtml = nonCommentLines.Any(l => l.Contains("<") && l.Contains(">") && !l.StartsWith("@"));
+                bool hasAtDirectives = nonCommentLines.Any(l => l.StartsWith("@") && !l.StartsWith("@@"));
                 bool hasCodeBlockContent = false;
                 var codeBlockIndex = nonCommentLines.FindIndex(l => l.Trim() == "@code");
                 if (codeBlockIndex != -1 && codeBlockIndex < nonCommentLines.Count -1)
@@ -1046,14 +1046,14 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
                     _logger.LogWarning("⚠️ Plausibility check Razor ('{FileName}') FAILED: No se encontraron tags HTML, ni directivas '@' significativas, ni contenido en bloque '@code'.", fileName);
                     return false;
                 }
-                
-                bool isLikelyPage = fileName.Contains("Page", StringComparison.OrdinalIgnoreCase) || 
+
+                bool isLikelyPage = fileName.Contains("Page", StringComparison.OrdinalIgnoreCase) ||
                                     Regex.IsMatch(fileName, @"(Index|Create|Edit|Details|Delete|List)\.razor", RegexOptions.IgnoreCase);
                 if (isLikelyPage && !nonCommentLines.Any(l => l.StartsWith("@page")))
                 {
                      _logger.LogWarning("⚠️ Plausibility check Razor ('{FileName}'): Parece una página pero no tiene directiva '@page'. Podría ser un error.", fileName);
                 }
-                 if (nonCommentLines.Count < 1 && !hasHtml && !hasCodeBlockContent) 
+                 if (nonCommentLines.Count < 1 && !hasHtml && !hasCodeBlockContent)
                 {
                      _logger.LogWarning("⚠️ Plausibility check Razor ('{FileName}') FAILED: Muy pocas líneas ({Count}) sin HTML claro o contenido en bloque de código.", fileName, nonCommentLines.Count);
                     return false;
