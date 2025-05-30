@@ -33,26 +33,39 @@ namespace Infraestructura
             var mensaje = @$"Sos un ingeniero de software senior experto en Blazor Server y arquitectura de aplicaciones web. Basado en el siguiente requerimiento de usuario, genera una lista concisa de TAREAS TÉCNICAS de alto nivel, paso a paso, para implementar la funcionalidad completa.
 
 Consideraciones Importantes:
-1.  **Nivel de Tarea:** Cada tarea DEBE describir la creación o modificación de UN archivo específico (ej: 'Crear modelo Models/Producto.cs', 'Modificar página Pages/Index.razor', 'Registrar servicio en Program.cs') o una acción de configuración clara.
+1.  **Nivel de Tarea Detallado:** Cada tarea DEBE describir la creación o modificación de UN archivo específico y la funcionalidad principal a implementar en él. Para aplicaciones CRUD, esto significa tareas separadas para el modelo, cada método del servicio (o la clase de servicio completa si es simple), cada página Razor (Index, Create, Edit, Details, Delete), y cualquier modificación a archivos de configuración o layout.
+    Ej: 'Crear modelo C# Models/Producto.cs con propiedades X, Y, Z y DataAnnotations.',
+        'Crear servicio Services/ProductoService.cs que implemente IProductoService con métodos CRUD para Producto usando AppDbContext.',
+        'Crear página Pages/Productos/Index.razor para listar productos y ofrecer opciones CRUD.'
+        'Modificar Program.cs para registrar ProductoService y AppDbContext.'
 2.  **NO Descomponer Código:** NO generes tareas que sean líneas individuales de código, HTML, Razor o comentarios. NO intentes escribir el contenido de los archivos aquí.
-3.  **Objetivo:** El resultado es un backlog para que otro agente desarrollador tome cada tarea y genere el archivo completo correspondiente.
-4.  **Orden Lógico:** Intenta ordenar las tareas en un flujo lógico (ej: crear modelos antes que páginas que los usen, crear DbContext antes de usarlo).
-5.  **Archivos Base:** NO incluyas tareas para archivos base que se asumen ya existentes o generados automáticamente (como _Imports.razor, App.razor, MainLayout.razor, Program.cs básico, .csproj), a menos que el requerimiento pida MODIFICARLOS específicamente (ej: 'Añadir enlace a NavMenu.razor', 'Registrar servicio en Program.cs').
-6.  **Claridad:** Sé claro y conciso en la descripción de cada tarea. Usa rutas relativas (ej: Models/Cliente.cs, Pages/Clientes/Listado.razor).
+3.  **Objetivo:** El resultado es un backlog para que otro agente desarrollador tome cada tarea y genere el archivo completo correspondiente. La descripción de la tarea debe ser lo suficientemente rica para que el desarrollador entienda qué crear.
+4.  **Orden Lógico:** Intenta ordenar las tareas en un flujo lógico (ej: crear modelos antes que servicios, servicios antes que páginas que los usen, crear DbContext antes de usarlo, registrar servicios/DbContext en Program.cs después de crearlos).
+5.  **Archivos Base:** NO incluyas tareas para archivos base que se asumen ya existentes o generados automáticamente (como _Imports.razor, App.razor, MainLayout.razor básico, .csproj), a menos que el requerimiento pida MODIFICARLOS específicamente (ej: 'Modificar Shared/NavMenu.razor para añadir enlaces...', 'Modificar Program.cs para registrar servicio...').
+6.  **Claridad y Detalle CRUD:** Sé claro y conciso, pero con suficiente detalle. Para CRUD, especifica:
+    *   **Modelo:** Nombre del archivo, propiedades principales y cualquier DataAnnotation clave (ej. `[Key]`, `[Required]`).
+    *   **DbContext:** Nombre del archivo, qué `DbSet<>` añadir.
+    *   **Servicio (Interfaz e Implementación):** Nombres de archivo, qué entidad maneja, qué métodos CRUD básicos (GetAll, GetById, Create, Update, Delete).
+    *   **Páginas Razor CRUD:** Nombre del archivo (Index, Create, Edit, Details, Delete), propósito principal (listar, formulario de creación, etc.), y qué componentes clave debe tener (tabla, `<EditForm>`, botones de acción).
+    *   **Configuración:** Qué archivo modificar (ej. `Program.cs`, `Shared/NavMenu.razor`) y qué añadir/cambiar (registro de servicio, `NavLink`).
+7.  **Rutas:** Usa rutas relativas (ej: `Models/Cliente.cs`, `Pages/Clientes/Index.razor`).
 
 Requerimiento de Usuario:
 ""{prompt.Descripcion}""
 
 Ejemplos de TAREAS TÉCNICAS VÁLIDAS (Formato deseado):
-- Crear modelo C# Models/Cliente.cs con propiedades Id, Nombre, Email, FechaRegistro.
-- Crear DbContext Data/AppDbContext.cs con DbSet<Cliente>.
-- Registrar AppDbContext en Program.cs usando base de datos en memoria.
-- Crear página Razor Pages/Clientes/Listado.razor para mostrar tabla de clientes.
-- Crear página Razor Pages/Clientes/Crear.razor con formulario para añadir cliente.
-- Crear página Razor Pages/Clientes/Editar.razor para modificar cliente por Id.
-- Crear página Razor Pages/Clientes/Detalles.razor para ver detalles de cliente por Id.
-- Crear página Razor Pages/Clientes/Eliminar.razor para confirmar borrado de cliente por Id.
-- Añadir enlaces CRUD para Clientes en Shared/NavMenu.razor.
+- Crear modelo C# `Models/Cliente.cs` con propiedades Id (Key), Nombre (Required, MaxLength 100), Email (Required, EmailAddress), FechaRegistro (DateTime), Saldo (decimal), y DataAnnotations apropiadas.
+- Crear (o modificar) DbContext en `Data/AppDbContext.cs` para incluir `public DbSet<Cliente> Clientes { get; set; }`.
+- Modificar `Program.cs` para registrar `AppDbContext` (ej. `builder.Services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase("AppDb"));`).
+- Crear interfaz `Services/IClienteService.cs` definiendo métodos asíncronos para GetAll, GetById, Create, Update, Delete para la entidad Cliente.
+- Crear clase `Services/ClienteService.cs` que implemente `IClienteService` utilizando `AppDbContext` para realizar las operaciones CRUD para Cliente.
+- Modificar `Program.cs` para registrar el servicio Cliente (ej. `builder.Services.AddScoped<IClienteService, ClienteService>();`).
+- Crear página Razor `Pages/Clientes/Index.razor` para mostrar una tabla de todos los clientes. Incluir enlaces/botones para 'Crear Nuevo', y para cada cliente: 'Editar', 'Detalles', 'Eliminar'.
+- Crear página Razor `Pages/Clientes/Create.razor` con un `<EditForm>` para crear un nuevo Cliente. Incluir campos para todas las propiedades editables del modelo Cliente, validaciones (`<DataAnnotationsValidator />`), y un botón de 'Guardar'.
+- Crear página Razor `Pages/Clientes/Edit.razor` con un `<EditForm>` para modificar un Cliente existente (cargado por Id). Incluir campos para todas las propiedades editables, validaciones, y un botón de 'Guardar'.
+- Crear página Razor `Pages/Clientes/Details.razor` para mostrar todas las propiedades de un Cliente (cargado por Id) en modo de solo lectura.
+- Crear página Razor `Pages/Clientes/Delete.razor` para mostrar los detalles de un Cliente (cargado por Id) y pedir confirmación antes de eliminarlo.
+- Modificar el archivo `Shared/NavMenu.razor` para añadir enlaces de navegación a la página de listado de Clientes (Index.razor).
 
 Ejemplos de TAREAS INVÁLIDAS (Formato INCORRECTO - NO HACER ESTO):
 - public class Cliente
