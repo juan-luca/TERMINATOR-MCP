@@ -33,7 +33,7 @@ namespace Infraestructura
             var mensaje = @$"Sos un ingeniero de software senior experto en Blazor Server y arquitectura de aplicaciones web. Basado en el siguiente requerimiento de usuario, genera una lista concisa de TAREAS TÉCNICAS de alto nivel, paso a paso, para implementar la funcionalidad completa.
 
 Consideraciones Importantes:
-1.  **Nivel de Tarea Detallado:** Cada tarea DEBE describir la creación o modificación de UN archivo específico y la funcionalidad principal a implementar en él. Para aplicaciones CRUD, esto significa tareas separadas para el modelo, cada método del servicio (o la clase de servicio completa si es simple), cada página Razor (Index, Create, Edit, Details, Delete), y cualquier modificación a archivos de configuración o layout.
+1.  **Nivel de Tarea Detallado:** Cada tarea DEBE describir la creación o modificación de UN archivo específico y la funcionalidad principal a implementar en él. Para aplicaciones CRUD, esto significa tareas separadas untuk el modelo, cada método del servicio (o la clase de servicio completa si es simple), cada página Razor (Index, Create, Edit, Details, Delete), y cualquier modificación a archivos de configuración o layout.
     Ej: 'Crear modelo C# Models/Producto.cs con propiedades X, Y, Z y DataAnnotations.',
         'Crear servicio Services/ProductoService.cs que implemente IProductoService con métodos CRUD para Producto usando AppDbContext.',
         'Crear página Pages/Productos/Index.razor para listar productos y ofrecer opciones CRUD.'
@@ -53,29 +53,27 @@ Consideraciones Importantes:
 Requerimiento de Usuario:
 ""{prompt.Descripcion}""
 
-Ejemplos de TAREAS TÉCNICAS VÁLIDAS (Formato deseado):
-- Crear modelo C# `Models/Cliente.cs` con propiedades Id (Key), Nombre (Required, MaxLength 100), Email (Required, EmailAddress), FechaRegistro (DateTime), Saldo (decimal), y DataAnnotations apropiadas.
-- Crear (o modificar) DbContext en `Data/AppDbContext.cs` para incluir `public DbSet<Cliente> Clientes { get; set; }`.
-- Modificar `Program.cs` para registrar `AppDbContext` (ej. `builder.Services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase("AppDb"));`).
-- Crear interfaz `Services/IClienteService.cs` definiendo métodos asíncronos para GetAll, GetById, Create, Update, Delete para la entidad Cliente.
-- Crear clase `Services/ClienteService.cs` que implemente `IClienteService` utilizando `AppDbContext` para realizar las operaciones CRUD para Cliente.
-- Modificar `Program.cs` para registrar el servicio Cliente (ej. `builder.Services.AddScoped<IClienteService, ClienteService>();`).
-- Crear página Razor `Pages/Clientes/Index.razor` para mostrar una tabla de todos los clientes. Incluir enlaces/botones para 'Crear Nuevo', y para cada cliente: 'Editar', 'Detalles', 'Eliminar'.
-- Crear página Razor `Pages/Clientes/Create.razor` con un `<EditForm>` para crear un nuevo Cliente. Incluir campos para todas las propiedades editables del modelo Cliente, validaciones (`<DataAnnotationsValidator />`), y un botón de 'Guardar'.
-- Crear página Razor `Pages/Clientes/Edit.razor` con un `<EditForm>` para modificar un Cliente existente (cargado por Id). Incluir campos para todas las propiedades editables, validaciones, y un botón de 'Guardar'.
-- Crear página Razor `Pages/Clientes/Details.razor` para mostrar todas las propiedades de un Cliente (cargado por Id) en modo de solo lectura.
-- Crear página Razor `Pages/Clientes/Delete.razor` para mostrar los detalles de un Cliente (cargado por Id) y pedir confirmación antes de eliminarlo.
-- Modificar el archivo `Shared/NavMenu.razor` para añadir enlaces de navegación a la página de listado de Clientes (Index.razor).
+--- INICIO DE EJEMPLOS ---
+Los siguientes son EJEMPLOS para ilustrar el FORMATO y NIVEL DE DETALLE deseado para cada tarea. NO COPIES el texto literal de estos ejemplos. Úsalos SOLAMENTE COMO GUÍA para el estilo de las tareas que TÚ generes.
+Formato de Ejemplo de Tarea:
+(No uses estas líneas exactas en tu salida, son solo para mostrar cómo se vería una tarea)
 
-Ejemplos de TAREAS INVÁLIDAS (Formato INCORRECTO - NO HACER ESTO):
-- public class Cliente
-- {{
-- public string Nombre {{ get; set; }}
-- <InputText @bind-Value=""cliente.Nombre"" />
-- await dbContext.Clientes.AddAsync(nuevoCliente);
-- }}
-- @page ""/clientes/crear""
-- ```csharp
+- Crear archivo de modelo C# para la entidad Cliente en la ruta Models/Cliente.cs. Este modelo debe incluir las siguientes propiedades: Id (entero, actuará como clave primaria), Nombre (cadena, obligatorio, longitud máxima de 100 caracteres), Email (cadena, obligatorio, debe ser una dirección de correo válida), FechaRegistro (fecha y hora), Saldo (numérico decimal). Incluir las DataAnnotations o equivalentes necesarias para validaciones (ej. Required, StringLength, EmailAddress).
+- Modificar la clase DbContext en Data/AppDbContext.cs para asegurar que incluya una propiedad DbSet para la entidad Cliente (ejemplo: public DbSet<Cliente> Clientes get set).
+- Modificar el archivo Program.cs para registrar el servicio AppDbContext. Configurar para que use una base de datos en memoria (ejemplo de configuración: builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseInMemoryDatabase(""AppDb""))).
+- Crear interfaz de servicio en Services/IClienteService.cs para la entidad Cliente, definiendo métodos asíncronos para las operaciones CRUD básicas: obtener todos, obtener por Id, crear, actualizar y eliminar.
+- Crear clase de servicio en Services/ClienteService.cs que implemente la interfaz IClienteService, utilizando el AppDbContext para realizar las operaciones CRUD para la entidad Cliente.
+- Modificar el archivo Program.cs para registrar el servicio de Cliente (ejemplo de configuración: builder.Services.AddScoped<IClienteService, ClienteService>()).
+- Crear página Razor en Pages/Clientes/Index.razor para mostrar una tabla de todos los clientes. Incluir enlaces o botones para 'Crear Nuevo', y para cada cliente en la tabla: 'Editar', 'Detalles', 'Eliminar'.
+- Crear página Razor en Pages/Clientes/Create.razor con un formulario EditForm para crear un nuevo Cliente. Incluir campos de entrada para todas las propiedades editables del modelo Cliente, validaciones usando DataAnnotationsValidator y ValidationSummary, y un botón de 'Guardar'.
+- Crear página Razor en Pages/Clientes/Edit.razor con un formulario EditForm para modificar un Cliente existente (cargado por su Id). Incluir campos de entrada para todas las propiedades editables, validaciones, y un botón de 'Guardar'.
+- Crear página Razor en Pages/Clientes/Details.razor para mostrar todas las propiedades de un Cliente (cargado por su Id) en modo de solo lectura.
+- Crear página Razor en Pages/Clientes/Delete.razor para mostrar los detalles de un Cliente (cargado por su Id) y pedir confirmación al usuario antes de proceder con la eliminación.
+- Modificar el archivo Shared/NavMenu.razor para añadir enlaces de navegación a la página de listado de Clientes (Index.razor).
+
+--- FIN DE EJEMPLOS ---
+
+Recuerda: Genera la lista de tareas técnicas necesarias para CUMPLIR EL REQUERIMIENTO DEL USUARIO. Las tareas deben estar ordenadas lógicamente. Usa los ejemplos ANTERIORES ÚNICAMENTE COMO GUÍA para el formato, el nivel de detalle y el tipo de archivo a crear o modificar por tarea. NO COPIES EL TEXTO DE LOS EJEMPLOS.
 
 Genera la lista de tareas técnicas necesarias para cumplir el requerimiento, una tarea por línea, comenzando cada tarea con '-' o un número:
 ";
@@ -90,14 +88,32 @@ Genera la lista de tareas técnicas necesarias para cumplir el requerimiento, un
 
                 if (string.IsNullOrWhiteSpace(respuesta)) { _logger.LogWarning("El planificador Gemini devolvió una respuesta vacía para el prompt '{Titulo}'.", prompt.Titulo); return Array.Empty<string>(); }
 
-                var initialLines = respuesta.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Select(line => line.Trim(' ', '-', '*', '.')).Select(line => line.Trim()).Where(line => !string.IsNullOrWhiteSpace(line)).ToList();
+                var initialLines = respuesta.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                                   .Select(line => line.Trim()) 
+                                   .Where(line => !string.IsNullOrWhiteSpace(line))
+                                   .ToList();
                 _logger.LogDebug("Líneas iniciales después de split y trim básico: {Count}", initialLines.Count);
 
+                // NEW: Sanitize first
+                var sanitizedTasks = SanitizarBacklog(initialLines, _logger);
+                _logger.LogDebug("Tareas después de la sanitización: {Count}", sanitizedTasks.Count);
+
                 var validTasks = new List<string>();
-                var discardedLines = new List<string>();
-                foreach (var line in initialLines) { if (IsValidTask(line)) validTasks.Add(line); else discardedLines.Add(line); }
-                if (discardedLines.Any()) { _logger.LogWarning("Se descartaron {Count} líneas por no parecer tareas válidas: {Discarded}", discardedLines.Count, string.Join(" | ", discardedLines.Take(5)) + (discardedLines.Count > 5 ? "..." : "")); }
-                _logger.LogDebug("Tareas válidas después del filtrado: {Count}", validTasks.Count);
+                var discardedLines = new List<string>(); // Tasks discarded by IsValidTask AFTER sanitization
+                foreach (var line in sanitizedTasks) // Iterate sanitized tasks
+                {
+                    if (IsValidTask(line)) // IsValidTask checks if the line *looks* like a task
+                    {
+                        validTasks.Add(line);
+                    }
+                    else
+                    {
+                        discardedLines.Add(line);
+                    }
+                }
+
+                if (discardedLines.Any()) { _logger.LogWarning("Se descartaron {Count} líneas por IsValidTask DESPUÉS de la sanitización: {Discarded}", discardedLines.Count, string.Join(" | ", discardedLines.Take(5)) + (discardedLines.Count > 5 ? "..." : "")); }
+                _logger.LogDebug("Tareas válidas después del filtrado final: {Count}", validTasks.Count);
 
                 var sortedTasks = validTasks.Select(task => new { Task = task, Category = GetTaskCategory(task) }).OrderBy(item => item.Category).ThenBy(item => item.Task).Select(item => item.Task).ToList();
                 _logger.LogDebug("Tareas después de ordenar por categoría: {Count}", sortedTasks.Count);
@@ -115,9 +131,137 @@ Genera la lista de tareas técnicas necesarias para cumplir el requerimiento, un
                 return Array.Empty<string>();
             }
         }
+        
+        private List<string> SanitizarBacklog(List<string> rawTasks, ILogger<PlanificadorAgent> logger)
+        {
+            var cleanedTasks = new List<string>();
+            var commonPromptPhrases = new[] {
+                "ejemplos de tareas técnicas válidas", "formato deseado", "no copies el texto",
+                "requerimiento de usuario:", "paso a paso", "nivel de tarea:", "no descomponer código",
+                "objetivo:", "resultado es un backlog", "orden lógico:", "archivos base:",
+                "claridad:", "sé claro y conciso", "genera la lista de tareas", "--- inicio de ejemplos ---",
+                "--- fin de ejemplos ---", "recuerda:", "solo como guía", "no copies los ejemplos",
+                "sos un ingeniero de software", "basado en el siguiente requerimiento",
+                "public class", "get; set;", "return ", "async Task", "<EditForm", "@page", "builder.Services",
+                "options =>", "await ", "_context.", "Console.WriteLine", "string[]", "List<string>", "=>",
+                "ej:", "ejemplo de configuración:", "ejemplo:", "este modelo debe incluir", "este servicio debe", "esta página debe",
+                "actuará como clave primaria", "obligatorio", "longitud máxima", "debe ser una dirección de correo válida",
+                "fecha y hora", "numérico decimal", "propiedad DbSet para la entidad", "métodos asíncronos para las operaciones CRUD",
+                "utilizando el AppDbContext", "mostrar una tabla de todos", "incluir enlaces o botones para",
+                "formulario EditForm para crear", "campos de entrada para todas las propiedades", "validaciones usando DataAnnotationsValidator",
+                "cargar por su Id", "pedir confirmación al usuario antes de proceder", "añadir enlaces de navegación a la página"
+            }.Select(p => p.ToLowerInvariant()).ToArray();
 
-        private bool IsValidTask(string line) { if (string.IsNullOrWhiteSpace(line) || line.Length < 10) return false; if (line.StartsWith("{") || line.StartsWith("}") || line.StartsWith("(") || line.StartsWith(")") || line.StartsWith("<") || line.StartsWith("/") || line.StartsWith("@") || line.StartsWith("using ") || line.StartsWith("public ") || line.StartsWith("private ") || line.StartsWith("protected ") || line.StartsWith("internal ") || line.StartsWith("namespace ") || line.StartsWith("var ") || line.StartsWith("await ") || line.StartsWith("return ") || line.StartsWith("if ") || line.StartsWith("else") || line.StartsWith("foreach") || line.StartsWith("while ") || line.StartsWith("Console.") || line.StartsWith("builder.") || line.StartsWith("context.") || line.StartsWith("services.") || line.StartsWith("app.") || line.Trim() == "```") return false; var actionVerbs = new[] { "crear", "modificar", "añadir", "agregar", "registrar", "configurar", "actualizar", "eliminar", "generar", "implementar", "asegurar", "refactorizar", "mover", "renombrar" }; if (!actionVerbs.Any(verb => line.ToLowerInvariant().Contains(verb))) return false; var artifacts = new[] { ".cs", ".razor", "modelo", "model", "página", "page", "componente", "component", "servicio", "service", "context", "dbcontext", "controlador", "controller", "api", "dto", "viewmodel", "entidad", "entity", "repositorio", "repository", "interfaz", "interface", "program", "startup", "config", "setting", "navmenu", "layout", "clase", "class" }; if (!artifacts.Any(art => line.ToLowerInvariant().Contains(art))) return false; return true; }
-        private TaskCategory GetTaskCategory(string task) { var tLower = task.ToLowerInvariant(); if (tLower.Contains("modelo") || tLower.Contains("model") || tLower.Contains("entidad") || tLower.Contains("entity") || tLower.Contains("dto") || tLower.Contains("enum") || (tLower.Contains(".cs") && (tLower.Contains("/models/") || tLower.Contains("\\models\\")))) return TaskCategory.Model; if (tLower.Contains("dbcontext") || tLower.Contains("contexto") || tLower.Contains("repositorio") || tLower.Contains("repository") || (tLower.Contains(".cs") && (tLower.Contains("/data/") || tLower.Contains("\\data\\")))) return TaskCategory.Data; if (tLower.Contains("program.cs") || tLower.Contains("startup") || tLower.Contains("configurar") || tLower.Contains("registrar servicio") || tLower.Contains("appsettings")) return TaskCategory.Configuration; if (tLower.Contains("servicio") || tLower.Contains("service") || tLower.Contains("cliente") || tLower.Contains("client") || tLower.Contains("helper") || tLower.Contains("manager") || (tLower.Contains(".cs") && (tLower.Contains("/services/") || tLower.Contains("\\services\\") || tLower.Contains("/clients/") || tLower.Contains("\\clients\\") || tLower.Contains("/helpers/") || tLower.Contains("\\helpers\\")))) return TaskCategory.Service; if ((tLower.Contains("página") || tLower.Contains("page")) && tLower.Contains(".razor") || (tLower.Contains(".razor") && (tLower.Contains("/pages/") || tLower.Contains("\\pages\\")))) return TaskCategory.Page; if (tLower.Contains("componente") || tLower.Contains("component") || (tLower.Contains(".razor") && (tLower.Contains("/components/") || tLower.Contains("\\components\\")))) return TaskCategory.Component; if (tLower.Contains("navmenu") || tLower.Contains("layout") || (tLower.Contains(".razor") && (tLower.Contains("/shared/") || tLower.Contains("\\shared\\")))) return TaskCategory.Layout; if (tLower.Contains("interfaz") || tLower.Contains("interface") || (tLower.Contains(".cs") && (tLower.Contains("/interfaces/") || tLower.Contains("\\interfaces\\")))) return TaskCategory.Service; if (tLower.EndsWith(".cs")) return TaskCategory.Other; if (tLower.EndsWith(".razor")) return TaskCategory.Component; return TaskCategory.Other; }
+            var actionVerbs = new[] { 
+                "crear", "modificar", "añadir", "agregar", "registrar", "configurar", "actualizar", "eliminar", "generar", 
+                "implementar", "asegurar", "refactorizar", "mover", "renombrar", "definir", "establecer", 
+                "integrar", "mostrar", "permitir", "validar", "usar", "inyectar", "heredar", "llamar", "navegar" 
+            }.Select(v => v.ToLowerInvariant()).ToArray();
+
+            foreach (var task in rawTasks)
+            {
+                string currentTask = task.Trim(' ', '-', '*', '.', '`', '"'); // Aggressive initial trim
+
+                // Check if the task seems to be a leftover from the prompt's own text or examples
+                bool isPromptRemnant = commonPromptPhrases.Any(phrase =>
+                    currentTask.ToLowerInvariant().Contains(phrase));
+
+                if (isPromptRemnant)
+                {
+                    // Allow if it looks like a genuine task despite containing some common words from examples (e.g. "Crear modelo...")
+                    bool looksLikeTask = actionVerbs.Any(verb => currentTask.ToLowerInvariant().StartsWith(verb)) && 
+                                         (currentTask.Contains(".cs") || currentTask.Contains(".razor"));
+                    if (!looksLikeTask)
+                    {
+                        logger.LogDebug("Sanitizando: Tarea removida por parecer remanente del prompt/ejemplo: '{Task}'", task);
+                        continue;
+                    }
+                }
+
+                // Remove tasks that are too short to be meaningful
+                // Exception for common short tasks that are usually valid (e.g. "Modificar Program.cs para...")
+                bool isCommonShortTask = (currentTask.ToLowerInvariant().Contains("program.cs") || 
+                                         currentTask.ToLowerInvariant().Contains("navmenu.razor") ||
+                                         currentTask.ToLowerInvariant().Contains("appdbcontext")) 
+                                         && currentTask.Length < 30; // If it's short but refers to these, it might be okay
+
+                if (currentTask.Length < 15 && !isCommonShortTask) 
+                {
+                    logger.LogDebug("Sanitizando: Tarea removida por ser demasiado corta: '{Task}'", task);
+                    continue;
+                }
+                
+                // Check for lines that are clearly code and not task descriptions
+                bool containsActionVerb = actionVerbs.Any(verb => currentTask.ToLowerInvariant().Contains(verb));
+                
+                if (!containsActionVerb)
+                {
+                    // If no action verb, it's highly suspect if it also contains code-like syntax
+                    if (currentTask.EndsWith(";") || currentTask.EndsWith("{") || currentTask.EndsWith("}") || currentTask.EndsWith("/>") || currentTask.Contains("=>") || currentTask.Contains(" get ") || currentTask.Contains(" set ") || currentTask.StartsWith("<") || currentTask.StartsWith("@"))
+                    {
+                         logger.LogDebug("Sanitizando: Tarea removida por parecer código (sin verbo de acción y con sintaxis de código): '{Task}'", task);
+                         continue;
+                    }
+                }
+                // If it starts with a non-action verb and contains code-like syntax, it might be a comment or description of code.
+                if (!actionVerbs.Any(verb => currentTask.ToLowerInvariant().TrimStart().StartsWith(verb)) && (currentTask.Contains("=>") || currentTask.Contains("{ get; set; }")))
+                {
+                    logger.LogDebug("Sanitizando: Tarea removida por no iniciar con verbo de acción y contener sintaxis de código: '{Task}'", task);
+                    continue;
+                }
+
+
+                // Remove tasks that are just instructions to the AI
+                if (currentTask.ToLowerInvariant().StartsWith("genera la lista") || 
+                    currentTask.ToLowerInvariant().StartsWith("no incluyas") ||
+                    currentTask.ToLowerInvariant().StartsWith("recuerda:") ||
+                    currentTask.ToLowerInvariant().StartsWith("considera:"))
+                {
+                    logger.LogDebug("Sanitizando: Tarea removida por ser instrucción para el AI: '{Task}'", task);
+                    continue;
+                }
+
+                cleanedTasks.Add(currentTask);
+            }
+            return cleanedTasks;
+        }
+
+        private bool IsValidTask(string line) 
+        { 
+            if (string.IsNullOrWhiteSpace(line) || line.Length < 10) return false; 
+            // Check for typical code statement characters or structures that are unlikely in a task description
+            if (line.StartsWith("{") || line.StartsWith("}") || line.StartsWith("(") || line.StartsWith(")") || 
+                line.StartsWith("<") || line.StartsWith("/") || line.StartsWith("@") || 
+                line.StartsWith("using ") || line.StartsWith("public ") || line.StartsWith("private ") || 
+                line.StartsWith("protected ") || line.StartsWith("internal ") || line.StartsWith("namespace ") || 
+                line.StartsWith("var ") || line.StartsWith("await ") || line.StartsWith("return ") || 
+                line.StartsWith("if ") || line.StartsWith("else") || line.StartsWith("foreach") || 
+                line.StartsWith("while ") || line.StartsWith("Console.") || line.StartsWith("builder.") || 
+                line.StartsWith("context.") || line.StartsWith("services.") || line.StartsWith("app.") || 
+                line.Trim() == "```" || line.Contains("=>") || line.Contains("{ get; set; }")) // Added checks for lambda and auto-property
+            {
+                return false;
+            }
+
+            var actionVerbs = new[] { 
+                "crear", "modificar", "añadir", "agregar", "registrar", "configurar", "actualizar", "eliminar", 
+                "generar", "implementar", "asegurar", "refactorizar", "mover", "renombrar", "definir", 
+                "establecer", "integrar", "mostrar", "permitir", "validar", "usar", "inyectar", "heredar",
+                "llamar", "navegar" // Added more verbs
+            }; 
+            if (!actionVerbs.Any(verb => line.ToLowerInvariant().Contains(verb))) return false; 
+            
+            var artifacts = new[] { 
+                ".cs", ".razor", "modelo", "model", "página", "page", "componente", "component", 
+                "servicio", "service", "context", "dbcontext", "controlador", "controller", "api", 
+                "dto", "viewmodel", "entidad", "entity", "repositorio", "repository", "interfaz", "interface", 
+                "program", "startup", "config", "setting", "navmenu", "layout", "clase", "class", "archivo" // Added "archivo"
+            }; 
+            if (!artifacts.Any(art => line.ToLowerInvariant().Contains(art))) return false; 
+            
+            return true; 
+        }
+        private TaskCategory GetTaskCategory(string task) { var tLower = task.ToLowerInvariant(); if (tLower.Contains("modelo") || tLower.Contains("model") || tLower.Contains("entidad") || tLower.Contains("entity") || tLower.Contains("dto") || tLower.Contains("enum") || (tLower.Contains(".cs") && (tLower.Contains("/models/") || tLower.Contains("\\models\\")))) return TaskCategory.Model; if (tLower.Contains("dbcontext") || tLower.Contains("contexto") || tLower.Contains("repositorio") || tLower.Contains("repository") || (tLower.Contains(".cs") && (tLower.Contains("/data/") || tLower.Contains("\\data\\")))) return TaskCategory.Data; if (tLower.Contains("program.cs") || tLower.Contains("startup") || tLower.Contains("configurar") || tLower.Contains("registrar servicio") || tLower.Contains("appsettings")) return TaskCategory.Configuration; if (tLower.Contains("servicio") || tLower.Contains("service") || tLower.Contains("cliente") || tLower.Contains("client") || tLower.Contains("helper") || tLower.Contains("manager") || (tLower.Contains(".cs") && (tLower.Contains("/services/") || tLower.Contains("\\services\\") || tLower.Contains("/clients/") || tLower.Contains("\\clients\\") || tLower.Contains("/helpers/") || tLower.Contains("\\helpers\\")))) return TaskCategory.Service; if ((tLower.Contains("página") || tLower.Contains("page")) && tLower.Contains(".razor") || (tLower.Contains(".razor") && (tLower.Contains("/pages/") || tLower.Contains("\\pages\\")))) return TaskCategory.Page; if (tLower.Contains("componente") || tLower.Contains("component") || (tLower.Contains(".razor") && (tLower.Contains("/components/") || tLower.Contains("\\components\\")))) return TaskCategory.Component; if (tLower.Contains("navmenu") || tLower.Contains("layout") || (tLower.Contains(".razor") && (tLower.Contains("/shared/") || tLower.Contains("\\shared\\") || tLower.Contains("/layout/") || tLower.Contains("\\layout\\")))) return TaskCategory.Layout; if (tLower.Contains("interfaz") || tLower.Contains("interface") || (tLower.Contains(".cs") && (tLower.Contains("/interfaces/") || tLower.Contains("\\interfaces\\")))) return TaskCategory.Service; if (tLower.EndsWith(".cs")) return TaskCategory.Other; if (tLower.EndsWith(".razor")) return TaskCategory.Component; return TaskCategory.Other; }
 
     }
 }

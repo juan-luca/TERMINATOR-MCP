@@ -78,7 +78,6 @@ namespace Infraestructura
                     continue;
                 }
                 
-                // Using the combined snippet of errors for this file as the "CorrectedErrorStore" key
                 string errorSnippetKey = string.Join(Environment.NewLine, errorMessagesParaArchivo);
                 if (_store.WasCorrected(filePath, errorSnippetKey)) 
                 { 
@@ -87,8 +86,7 @@ namespace Infraestructura
                 }
 
                 _logger.LogInformation("🛠 Intentando corregir archivo: {File}", filePath);
-                // Assuming projectContext might be null or a generic description if not available from a specific prompt.
-                // For now, passing null as projectContext as this method doesn't have direct access to the initial Shared.Prompt.
+                // Passing null for projectContext as it's not readily available here without further refactoring.
                 var prompt = CrearPromptParaCorregirError(codigoOriginal, Path.GetFileName(filePath), errorMessagesParaArchivo, null); 
                 string codigoCorregido;
                 try
@@ -109,7 +107,7 @@ namespace Infraestructura
                     if (!IsPathWritable(filePath, rutaProyecto)) { _logger.LogError("❌ Permiso denegado o ruta inválida detectada ANTES de escribir corrección en: {File}. Omitiendo.", filePath); continue; }
                     _logger.LogDebug("Escribiendo corrección (Longitud: {Length}) en: {File}", codigoCorregido.Length, filePath);
                     await File.WriteAllTextAsync(filePath, codigoCorregido);
-                    _store.MarkCorrected(filePath, errorSnippetKey); // Use the error snippet as key
+                    _store.MarkCorrected(filePath, errorSnippetKey); 
                     corregidos.Add(filePath);
                     _logger.LogInformation("✅ Archivo corregido y escrito: {File}", Path.GetFileName(filePath));
                 }
@@ -124,17 +122,15 @@ namespace Infraestructura
         private List<string> InferirArchivosFallados(string errorLogContent, string projectRootPath)
         {
             var failedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var projectFileName = Path.GetFileName(projectRootPath); // Assumes projectRootPath is the folder name
+            var projectFileName = Path.GetFileName(projectRootPath); 
             var projectFilePath = Path.Combine(projectRootPath, $"{projectFileName}.csproj"); 
-            if (!File.Exists(projectFilePath)) // If projectRootPath is already the .csproj file
+            if (!File.Exists(projectFilePath)) 
             {
-                var parentDir = Path.GetDirectoryName(projectRootPath);
-                if (Directory.Exists(parentDir)) projectRootPath = parentDir; // adjust projectRootPath if needed
-                 projectFilePath = Directory.GetFiles(projectRootPath, "*.csproj").FirstOrDefault() ?? projectFilePath; // Try to find any csproj
+                string? parentDir = Path.GetDirectoryName(projectRootPath);
+                if(parentDir != null && Directory.Exists(parentDir)) projectRootPath = parentDir; 
+                 projectFilePath = Directory.GetFiles(projectRootPath, "*.csproj").FirstOrDefault() ?? projectFilePath; 
             }
 
-
-            // Normalizar projectRootPath para comparaciones consistentes
             var fullProjectRootPath = Path.GetFullPath(projectRootPath);
 
             foreach (Match match in ErrorPathRegex.Matches(errorLogContent))
@@ -170,7 +166,6 @@ namespace Infraestructura
                 }
                 catch (Exception ex) { _logger.LogWarning(ex, "Error al procesar/combinar la ruta del log: '{PathPart}'. Omitiendo.", pathPart); continue; }
 
-
                 if (fullPath.Contains(Path.Combine("dotnet", "sdk"), StringComparison.OrdinalIgnoreCase) ||
                     fullPath.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar) ||
                     fullPath.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar))
@@ -204,20 +199,16 @@ namespace Infraestructura
             string searchKey;
             string targetFileNameOnly = Path.GetFileName(targetFilePath);
 
-            // For .csproj files, the errors might not contain the full path, just the filename.
             if (targetFilePath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)) 
             { 
                 searchKey = targetFileNameOnly; 
             } 
             else 
             { 
-                // For other files, try to make the search key more specific by using relative path if possible,
-                // but fall back to filename if path manipulation is complex.
-                // This helps distinguish files with the same name in different folders.
                 try 
                 { 
                     string? projectRootAttempt = Path.GetDirectoryName(targetFilePath);
-                    if (projectRootAttempt != null) projectRootAttempt = Path.GetDirectoryName(projectRootAttempt); // Go up one more level for typical project structures like Project/Models/File.cs
+                    if (projectRootAttempt != null) projectRootAttempt = Path.GetDirectoryName(projectRootAttempt); 
                     
                     searchKey = Path.GetRelativePath(projectRootAttempt ?? targetFilePath, targetFilePath); 
                     if (string.IsNullOrWhiteSpace(searchKey) || searchKey == "." || searchKey.Contains("..")) 
@@ -232,9 +223,9 @@ namespace Infraestructura
             }
             
             var relevantLines = fullErrorLog.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-                                .Where(line => line.IndexOf(searchKey, StringComparison.OrdinalIgnoreCase) >= 0 || // Line contains the file path/name
-                                              (Regex.IsMatch(line, @"^\s*(error|warning)\s+\w+:") && // Line is a general error/warning
-                                               !Regex.IsMatch(line, ErrorPathRegex.ToString() ) // But not an error pointing to a *different* specific file
+                                .Where(line => line.IndexOf(searchKey, StringComparison.OrdinalIgnoreCase) >= 0 || 
+                                              (Regex.IsMatch(line, @"^\s*(error|warning)\s+\w+:") && 
+                                               !Regex.IsMatch(line, ErrorPathRegex.ToString() ) 
                                               )
                                       )
                                 .Take(MaxLinesPerFile)
@@ -251,7 +242,8 @@ namespace Infraestructura
         private string CrearPromptParaCorregirError(string codigoOriginal, string nombreArchivo, List<string> errorMessages, string? projectContext)
         {
             string errorBlock = string.Join(Environment.NewLine, errorMessages.Select(e => $"- {e}"));
-            string fileType = Path.GetExtension(nombreArchivo).ToLowerInvariant() switch
+            string fileTypeExtension = Path.GetExtension(nombreArchivo).ToLowerInvariant();
+            string fileType = fileTypeExtension switch
             {
                 ".cs" => "C#",
                 ".razor" => "Blazor Razor",
@@ -259,6 +251,14 @@ namespace Infraestructura
                 ".cshtml" => "CSHTML",
                 _ => "desconocido"
             };
+            string langHint = fileTypeExtension switch {
+                ".cs" => "csharp",
+                ".razor" => "razor", // or html, but razor is more specific
+                ".csproj" => "xml",
+                ".cshtml" => "cshtml", // or html
+                _ => "plaintext"
+            };
+
 
             return @$"Eres un experto desarrollador C# y Blazor .NET. Tu tarea es corregir errores de compilación en el siguiente archivo.
 
@@ -269,11 +269,11 @@ Contexto General del Proyecto (si está disponible):
 {projectContext ?? "No hay contexto adicional del proyecto."}
 
 Código Original con Errores:
-```{fileType.ToLowerInvariant()}
+```{langHint}
 {codigoOriginal}
 ```
 
-Errores de Compilación Reportados (de 'dotnet build'):
+Errores de Compilación Reportados (de ""dotnet build""):
 {errorBlock}
 
 Instrucciones PRECISAS para la Corrección:
