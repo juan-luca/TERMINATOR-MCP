@@ -41,13 +41,13 @@ Consideraciones Importantes:
 2.  **NO Descomponer Código:** NO generes tareas que sean líneas individuales de código, HTML, Razor o comentarios. NO intentes escribir el contenido de los archivos aquí.
 3.  **Objetivo:** El resultado es un backlog para que otro agente desarrollador tome cada tarea y genere el archivo completo correspondiente. La descripción de la tarea debe ser lo suficientemente rica para que el desarrollador entienda qué crear.
 4.  **Orden Lógico:** Intenta ordenar las tareas en un flujo lógico (ej: crear modelos antes que servicios, servicios antes que páginas que los usen, crear DbContext antes de usarlo, registrar servicios/DbContext en Program.cs después de crearlos).
-5.  **Archivos Base:** NO incluyas tareas para archivos base que se asumen ya existentes o generados automáticamente (como _Imports.razor, App.razor, MainLayout.razor básico, .csproj), a menos que el requerimiento pida MODIFICARLOS específicamente (ej: 'Modificar Shared/NavMenu.razor para añadir enlaces...', 'Modificar Program.cs para registrar servicio...').
+5.  **Archivos Base:** NO incluyas tareas para archivos base que se asumen ya existentes o generados automáticamente (como _Imports.razor, App.razor, MainLayout.razor básico, .csproj), a menos que el requerimiento pida MODIFICARLOS específicamente (ej: 'Modificar Layout/NavMenu.razor para añadir enlaces...', 'Modificar Program.cs para registrar servicio...').
 6.  **Claridad y Detalle CRUD:** Sé claro y conciso, pero con suficiente detalle. Para CRUD, especifica:
     *   **Modelo:** Nombre del archivo, propiedades principales y cualquier DataAnnotation clave (ej. `[Key]`, `[Required]`).
     *   **DbContext:** Nombre del archivo, qué `DbSet<>` añadir.
     *   **Servicio (Interfaz e Implementación):** Nombres de archivo, qué entidad maneja, qué métodos CRUD básicos (GetAll, GetById, Create, Update, Delete).
     *   **Páginas Razor CRUD:** Nombre del archivo (Index, Create, Edit, Details, Delete), propósito principal (listar, formulario de creación, etc.), y qué componentes clave debe tener (tabla, `<EditForm>`, botones de acción).
-    *   **Configuración:** Qué archivo modificar (ej. `Program.cs`, `Shared/NavMenu.razor`) y qué añadir/cambiar (registro de servicio, `NavLink`).
+    *   **Configuración:** Qué archivo modificar (ej. `Program.cs`, `Layout/NavMenu.razor`) y qué añadir/cambiar (registro de servicio, `NavLink`).
 7.  **Rutas:** Usa rutas relativas (ej: `Models/Cliente.cs`, `Pages/Clientes/Index.razor`).
 
 Requerimiento de Usuario:
@@ -69,7 +69,7 @@ Formato de Ejemplo de Tarea:
 - Crear página Razor en Pages/Clientes/Edit.razor con un formulario EditForm para modificar un Cliente existente (cargado por su Id). Incluir campos de entrada para todas las propiedades editables, validaciones, y un botón de 'Guardar'.
 - Crear página Razor en Pages/Clientes/Details.razor para mostrar todas las propiedades de un Cliente (cargado por su Id) en modo de solo lectura.
 - Crear página Razor en Pages/Clientes/Delete.razor para mostrar los detalles de un Cliente (cargado por su Id) y pedir confirmación al usuario antes de proceder con la eliminación.
-- Modificar el archivo Shared/NavMenu.razor para añadir enlaces de navegación a la página de listado de Clientes (Index.razor).
+- Modificar el archivo Layout/NavMenu.razor para añadir enlaces de navegación a la página de listado de Clientes (Index.razor).
 
 --- FIN DE EJEMPLOS ---
 
@@ -226,39 +226,80 @@ Genera la lista de tareas técnicas necesarias para cumplir el requerimiento, un
             return cleanedTasks;
         }
 
-        private bool IsValidTask(string line) 
-        { 
-            if (string.IsNullOrWhiteSpace(line) || line.Length < 10) return false; 
-            // Check for typical code statement characters or structures that are unlikely in a task description
-            if (line.StartsWith("{") || line.StartsWith("}") || line.StartsWith("(") || line.StartsWith(")") || 
-                line.StartsWith("<") || line.StartsWith("/") || line.StartsWith("@") || 
-                line.StartsWith("using ") || line.StartsWith("public ") || line.StartsWith("private ") || 
-                line.StartsWith("protected ") || line.StartsWith("internal ") || line.StartsWith("namespace ") || 
-                line.StartsWith("var ") || line.StartsWith("await ") || line.StartsWith("return ") || 
-                line.StartsWith("if ") || line.StartsWith("else") || line.StartsWith("foreach") || 
-                line.StartsWith("while ") || line.StartsWith("Console.") || line.StartsWith("builder.") || 
-                line.StartsWith("context.") || line.StartsWith("services.") || line.StartsWith("app.") || 
-                line.Trim() == "```" || line.Contains("=>") || line.Contains("{ get; set; }")) // Added checks for lambda and auto-property
-            {
-                return false;
-            }
+        private bool IsValidTask(string line)
+        {
+            if (string.IsNullOrWhiteSpace(line) || line.Length < 10) return false;
+
+            string lowerLine = line.ToLowerInvariant();
 
             var actionVerbs = new[] { 
                 "crear", "modificar", "añadir", "agregar", "registrar", "configurar", "actualizar", "eliminar", 
                 "generar", "implementar", "asegurar", "refactorizar", "mover", "renombrar", "definir", 
                 "establecer", "integrar", "mostrar", "permitir", "validar", "usar", "inyectar", "heredar",
-                "llamar", "navegar" // Added more verbs
-            }; 
-            if (!actionVerbs.Any(verb => line.ToLowerInvariant().Contains(verb))) return false; 
-            
+                "llamar", "navegar" 
+            };
+            bool hasActionVerb = actionVerbs.Any(verb => lowerLine.Contains(verb));
+
             var artifacts = new[] { 
                 ".cs", ".razor", "modelo", "model", "página", "page", "componente", "component", 
                 "servicio", "service", "context", "dbcontext", "controlador", "controller", "api", 
                 "dto", "viewmodel", "entidad", "entity", "repositorio", "repository", "interfaz", "interface", 
-                "program", "startup", "config", "setting", "navmenu", "layout", "clase", "class", "archivo" // Added "archivo"
-            }; 
-            if (!artifacts.Any(art => line.ToLowerInvariant().Contains(art))) return false; 
+                "program", "startup", "config", "setting", "navmenu", "layout", "clase", "class", "archivo", ".csproj"
+            };
+            bool hasArtifact = artifacts.Any(art => lowerLine.Contains(art));
+
+            // Core requirement: must have an action and refer to an artifact.
+            if (!hasActionVerb)
+            {
+                _logger.LogDebug("IsValidTask: Rejected line '{Line}' due to missing action verb.", line);
+                return false;
+            }
+            if (!hasArtifact)
+            {
+                _logger.LogDebug("IsValidTask: Rejected line '{Line}' due to missing artifact type.", line);
+                return false;
+            }
+
+            // Stricter checks for lines that might be code despite having an action verb and artifact.
+            // These are more about the *start* of the line.
+            string[] codeLikeStarters = {
+                "{", "}", "(", ")", "<", "@", "using ", "public ", "private ", "protected ", 
+                "internal ", "namespace ", "var ", "await ", "return ", "if ", "else", "foreach", 
+                "while ", "Console.", "builder.", "context.", "services.", "app."
+            };
+            if (codeLikeStarters.Any(s => line.TrimStart().StartsWith(s, StringComparison.OrdinalIgnoreCase)))
+            {
+                // Special allowance for config file modifications, as they often include code-like instructions.
+                bool isConfigFileTask = lowerLine.Contains("program.cs") || lowerLine.Contains(".csproj");
+                if (isConfigFileTask)
+                {
+                    // If it's a config file task, allow if it also has substantial descriptive text beyond the code-like part.
+                    // Heuristic: check if the line is much longer than the code-like starter, or if it contains common descriptive patterns.
+                    if (line.Length > 30 || lowerLine.Contains("para") || lowerLine.Contains("con") || lowerLine.Contains("usando") || lowerLine.Contains("asegurar que")) {
+                        _logger.LogDebug("IsValidTask: Allowed config file task '{Line}' despite code-like start due to descriptive text.", line);
+                    } else {
+                        _logger.LogDebug("IsValidTask: Rejected config file task '{Line}' due to code-like start without enough descriptive text.", line);
+                        return false;
+                    }
+                }
+                else // Not a config file task, reject if it starts with code-like patterns.
+                {
+                    _logger.LogDebug("IsValidTask: Rejected line '{Line}' due to code-like start for a non-config file task.", line);
+                    return false;
+                }
+            }
             
+            // Reject if it's just "```"
+            if (line.Trim() == "```") {
+                 _logger.LogDebug("IsValidTask: Rejected line '{Line}' because it is just backticks.", line);
+                return false;
+            }
+
+            // Allow tasks like "Modificar Program.cs para registrar ApplicationDbContext usando builder.Services.AddDbContext(...);"
+            // The general checks for "=>" or "{ get; set; }" are removed if hasActionVerb and hasArtifact are true,
+            // as these might be part of a detailed description for the developer agent.
+            // SanitizarBacklog should catch more obvious code-only lines.
+
             return true; 
         }
         private TaskCategory GetTaskCategory(string task) { var tLower = task.ToLowerInvariant(); if (tLower.Contains("modelo") || tLower.Contains("model") || tLower.Contains("entidad") || tLower.Contains("entity") || tLower.Contains("dto") || tLower.Contains("enum") || (tLower.Contains(".cs") && (tLower.Contains("/models/") || tLower.Contains("\\models\\")))) return TaskCategory.Model; if (tLower.Contains("dbcontext") || tLower.Contains("contexto") || tLower.Contains("repositorio") || tLower.Contains("repository") || (tLower.Contains(".cs") && (tLower.Contains("/data/") || tLower.Contains("\\data\\")))) return TaskCategory.Data; if (tLower.Contains("program.cs") || tLower.Contains("startup") || tLower.Contains("configurar") || tLower.Contains("registrar servicio") || tLower.Contains("appsettings")) return TaskCategory.Configuration; if (tLower.Contains("servicio") || tLower.Contains("service") || tLower.Contains("cliente") || tLower.Contains("client") || tLower.Contains("helper") || tLower.Contains("manager") || (tLower.Contains(".cs") && (tLower.Contains("/services/") || tLower.Contains("\\services\\") || tLower.Contains("/clients/") || tLower.Contains("\\clients\\") || tLower.Contains("/helpers/") || tLower.Contains("\\helpers\\")))) return TaskCategory.Service; if ((tLower.Contains("página") || tLower.Contains("page")) && tLower.Contains(".razor") || (tLower.Contains(".razor") && (tLower.Contains("/pages/") || tLower.Contains("\\pages\\")))) return TaskCategory.Page; if (tLower.Contains("componente") || tLower.Contains("component") || (tLower.Contains(".razor") && (tLower.Contains("/components/") || tLower.Contains("\\components\\")))) return TaskCategory.Component; if (tLower.Contains("navmenu") || tLower.Contains("layout") || (tLower.Contains(".razor") && (tLower.Contains("/shared/") || tLower.Contains("\\shared\\") || tLower.Contains("/layout/") || tLower.Contains("\\layout\\")))) return TaskCategory.Layout; if (tLower.Contains("interfaz") || tLower.Contains("interface") || (tLower.Contains(".cs") && (tLower.Contains("/interfaces/") || tLower.Contains("\\interfaces\\")))) return TaskCategory.Service; if (tLower.EndsWith(".cs")) return TaskCategory.Other; if (tLower.EndsWith(".razor")) return TaskCategory.Component; return TaskCategory.Other; }
