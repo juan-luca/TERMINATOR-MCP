@@ -1169,7 +1169,3 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
         #endregion
     }
 }
-
-[end of Infraestructura/DesarrolladorAgent.cs]
-
-[end of Infraestructura/DesarrolladorAgent.cs]
