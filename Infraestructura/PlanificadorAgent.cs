@@ -89,7 +89,7 @@ Genera la lista de tareas técnicas necesarias para cumplir el requerimiento, un
                 if (string.IsNullOrWhiteSpace(respuesta)) { _logger.LogWarning("El planificador Gemini devolvió una respuesta vacía para el prompt '{Titulo}'.", prompt.Titulo); return Array.Empty<string>(); }
 
                 var initialLines = respuesta.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-                                   .Select(line => line.Trim()) 
+                                   .Select(line => line.Trim())
                                    .Where(line => !string.IsNullOrWhiteSpace(line))
                                    .ToList();
                 _logger.LogDebug("Líneas iniciales después de split y trim básico: {Count}", initialLines.Count);
@@ -131,7 +131,7 @@ Genera la lista de tareas técnicas necesarias para cumplir el requerimiento, un
                 return Array.Empty<string>();
             }
         }
-        
+
         private List<string> SanitizarBacklog(List<string> rawTasks, ILogger<PlanificadorAgent> logger)
         {
             var cleanedTasks = new List<string>();
@@ -152,10 +152,10 @@ Genera la lista de tareas técnicas necesarias para cumplir el requerimiento, un
                 "cargar por su Id", "pedir confirmación al usuario antes de proceder", "añadir enlaces de navegación a la página"
             }.Select(p => p.ToLowerInvariant()).ToArray();
 
-            var actionVerbs = new[] { 
-                "crear", "modificar", "añadir", "agregar", "registrar", "configurar", "actualizar", "eliminar", "generar", 
-                "implementar", "asegurar", "refactorizar", "mover", "renombrar", "definir", "establecer", 
-                "integrar", "mostrar", "permitir", "validar", "usar", "inyectar", "heredar", "llamar", "navegar" 
+            var actionVerbs = new[] {
+                "crear", "modificar", "añadir", "agregar", "registrar", "configurar", "actualizar", "eliminar", "generar",
+                "implementar", "asegurar", "refactorizar", "mover", "renombrar", "definir", "establecer",
+                "integrar", "mostrar", "permitir", "validar", "usar", "inyectar", "heredar", "llamar", "navegar"
             }.Select(v => v.ToLowerInvariant()).ToArray();
 
             foreach (var task in rawTasks)
@@ -169,7 +169,7 @@ Genera la lista de tareas técnicas necesarias para cumplir el requerimiento, un
                 if (isPromptRemnant)
                 {
                     // Allow if it looks like a genuine task despite containing some common words from examples (e.g. "Crear modelo...")
-                    bool looksLikeTask = actionVerbs.Any(verb => currentTask.ToLowerInvariant().StartsWith(verb)) && 
+                    bool looksLikeTask = actionVerbs.Any(verb => currentTask.ToLowerInvariant().StartsWith(verb)) &&
                                          (currentTask.Contains(".cs") || currentTask.Contains(".razor"));
                     if (!looksLikeTask)
                     {
@@ -180,20 +180,20 @@ Genera la lista de tareas técnicas necesarias para cumplir el requerimiento, un
 
                 // Remove tasks that are too short to be meaningful
                 // Exception for common short tasks that are usually valid (e.g. "Modificar Program.cs para...")
-                bool isCommonShortTask = (currentTask.ToLowerInvariant().Contains("program.cs") || 
+                bool isCommonShortTask = (currentTask.ToLowerInvariant().Contains("program.cs") ||
                                          currentTask.ToLowerInvariant().Contains("navmenu.razor") ||
-                                         currentTask.ToLowerInvariant().Contains("appdbcontext")) 
+                                         currentTask.ToLowerInvariant().Contains("appdbcontext"))
                                          && currentTask.Length < 30; // If it's short but refers to these, it might be okay
 
-                if (currentTask.Length < 15 && !isCommonShortTask) 
+                if (currentTask.Length < 15 && !isCommonShortTask)
                 {
                     logger.LogDebug("Sanitizando: Tarea removida por ser demasiado corta: '{Task}'", task);
                     continue;
                 }
-                
+
                 // Check for lines that are clearly code and not task descriptions
                 bool containsActionVerb = actionVerbs.Any(verb => currentTask.ToLowerInvariant().Contains(verb));
-                
+
                 if (!containsActionVerb)
                 {
                     // If no action verb, it's highly suspect if it also contains code-like syntax
@@ -212,7 +212,7 @@ Genera la lista de tareas técnicas necesarias para cumplir el requerimiento, un
 
 
                 // Remove tasks that are just instructions to the AI
-                if (currentTask.ToLowerInvariant().StartsWith("genera la lista") || 
+                if (currentTask.ToLowerInvariant().StartsWith("genera la lista") ||
                     currentTask.ToLowerInvariant().StartsWith("no incluyas") ||
                     currentTask.ToLowerInvariant().StartsWith("recuerda:") ||
                     currentTask.ToLowerInvariant().StartsWith("considera:"))
@@ -232,18 +232,18 @@ Genera la lista de tareas técnicas necesarias para cumplir el requerimiento, un
 
             string lowerLine = line.ToLowerInvariant();
 
-            var actionVerbs = new[] { 
-                "crear", "modificar", "añadir", "agregar", "registrar", "configurar", "actualizar", "eliminar", 
-                "generar", "implementar", "asegurar", "refactorizar", "mover", "renombrar", "definir", 
+            var actionVerbs = new[] {
+                "crear", "modificar", "añadir", "agregar", "registrar", "configurar", "actualizar", "eliminar",
+                "generar", "implementar", "asegurar", "refactorizar", "mover", "renombrar", "definir",
                 "establecer", "integrar", "mostrar", "permitir", "validar", "usar", "inyectar", "heredar",
-                "llamar", "navegar" 
+                "llamar", "navegar"
             };
             bool hasActionVerb = actionVerbs.Any(verb => lowerLine.Contains(verb));
 
-            var artifacts = new[] { 
-                ".cs", ".razor", "modelo", "model", "página", "page", "componente", "component", 
-                "servicio", "service", "context", "dbcontext", "controlador", "controller", "api", 
-                "dto", "viewmodel", "entidad", "entity", "repositorio", "repository", "interfaz", "interface", 
+            var artifacts = new[] {
+                ".cs", ".razor", "modelo", "model", "página", "page", "componente", "component",
+                "servicio", "service", "context", "dbcontext", "controlador", "controller", "api",
+                "dto", "viewmodel", "entidad", "entity", "repositorio", "repository", "interfaz", "interface",
                 "program", "startup", "config", "setting", "navmenu", "layout", "clase", "class", "archivo", ".csproj"
             };
             bool hasArtifact = artifacts.Any(art => lowerLine.Contains(art));
@@ -263,8 +263,8 @@ Genera la lista de tareas técnicas necesarias para cumplir el requerimiento, un
             // Stricter checks for lines that might be code despite having an action verb and artifact.
             // These are more about the *start* of the line.
             string[] codeLikeStarters = {
-                "{", "}", "(", ")", "<", "@", "using ", "public ", "private ", "protected ", 
-                "internal ", "namespace ", "var ", "await ", "return ", "if ", "else", "foreach", 
+                "{", "}", "(", ")", "<", "@", "using ", "public ", "private ", "protected ",
+                "internal ", "namespace ", "var ", "await ", "return ", "if ", "else", "foreach",
                 "while ", "Console.", "builder.", "context.", "services.", "app."
             };
             if (codeLikeStarters.Any(s => line.TrimStart().StartsWith(s, StringComparison.OrdinalIgnoreCase)))
@@ -288,7 +288,7 @@ Genera la lista de tareas técnicas necesarias para cumplir el requerimiento, un
                     return false;
                 }
             }
-            
+
             // Reject if it's just "```"
             if (line.Trim() == "```") {
                  _logger.LogDebug("IsValidTask: Rejected line '{Line}' because it is just backticks.", line);
@@ -300,7 +300,7 @@ Genera la lista de tareas técnicas necesarias para cumplir el requerimiento, un
             // as these might be part of a detailed description for the developer agent.
             // SanitizarBacklog should catch more obvious code-only lines.
 
-            return true; 
+            return true;
         }
         private TaskCategory GetTaskCategory(string task) { var tLower = task.ToLowerInvariant(); if (tLower.Contains("modelo") || tLower.Contains("model") || tLower.Contains("entidad") || tLower.Contains("entity") || tLower.Contains("dto") || tLower.Contains("enum") || (tLower.Contains(".cs") && (tLower.Contains("/models/") || tLower.Contains("\\models\\")))) return TaskCategory.Model; if (tLower.Contains("dbcontext") || tLower.Contains("contexto") || tLower.Contains("repositorio") || tLower.Contains("repository") || (tLower.Contains(".cs") && (tLower.Contains("/data/") || tLower.Contains("\\data\\")))) return TaskCategory.Data; if (tLower.Contains("program.cs") || tLower.Contains("startup") || tLower.Contains("configurar") || tLower.Contains("registrar servicio") || tLower.Contains("appsettings")) return TaskCategory.Configuration; if (tLower.Contains("servicio") || tLower.Contains("service") || tLower.Contains("cliente") || tLower.Contains("client") || tLower.Contains("helper") || tLower.Contains("manager") || (tLower.Contains(".cs") && (tLower.Contains("/services/") || tLower.Contains("\\services\\") || tLower.Contains("/clients/") || tLower.Contains("\\clients\\") || tLower.Contains("/helpers/") || tLower.Contains("\\helpers\\")))) return TaskCategory.Service; if ((tLower.Contains("página") || tLower.Contains("page")) && tLower.Contains(".razor") || (tLower.Contains(".razor") && (tLower.Contains("/pages/") || tLower.Contains("\\pages\\")))) return TaskCategory.Page; if (tLower.Contains("componente") || tLower.Contains("component") || (tLower.Contains(".razor") && (tLower.Contains("/components/") || tLower.Contains("\\components\\")))) return TaskCategory.Component; if (tLower.Contains("navmenu") || tLower.Contains("layout") || (tLower.Contains(".razor") && (tLower.Contains("/shared/") || tLower.Contains("\\shared\\") || tLower.Contains("/layout/") || tLower.Contains("\\layout\\")))) return TaskCategory.Layout; if (tLower.Contains("interfaz") || tLower.Contains("interface") || (tLower.Contains(".cs") && (tLower.Contains("/interfaces/") || tLower.Contains("\\interfaces\\")))) return TaskCategory.Service; if (tLower.EndsWith(".cs")) return TaskCategory.Other; if (tLower.EndsWith(".razor")) return TaskCategory.Component; return TaskCategory.Other; }
 

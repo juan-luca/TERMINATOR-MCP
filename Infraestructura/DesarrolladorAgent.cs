@@ -18,8 +18,33 @@ namespace Infraestructura
         private readonly GeminiClient _gemini; // Replace GeminiClient with your actual concrete class if different
         private readonly ILogger<DesarrolladorAgent> _logger;
 
-        // Regex (sin cambios respecto a la versión anterior)
-        private static readonly Regex PathExtractionRegex = new Regex( @"(?:archivo|modelo|página|componente|servicio|DbContext|fichero|en|a|para|modificar)\s+['""]?\s*(?<path>(?:[\w\-\.\s]+\/|[\w\-\.\s]+\\)+[\w\-\.\s]+\.(cs|razor|csproj))\s*['""]?" + @"|(?:en|modificar)\s+['""]?\s*(?<path>Program\.cs|App\.razor|_Imports\.razor)\s*['""]?" + @"['""]?\s*(?<path>(?:Models|Data|Services|Pages|Components|Shared)(?:\/|\\)[\w\-\.\s\\\/]+\.(cs|razor))\s*['""]?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        // Regex mejorado para extraer rutas de archivos de las descripciones de tareas.
+        // Prioriza rutas explícitas mencionadas con palabras clave y/o comillas/backticks.
+        private static readonly Regex PathExtractionRegex = new Regex(
+            // Opción 1: Keywords como "ruta", "archivo", "fichero", "modificar", etc., seguido de una ruta entre comillas simples, dobles o backticks.
+            // Ejemplo: "Crear archivo en la ruta 'Models/MiModelo.cs'"
+            // Ejemplo: "Modificar `Pages/Index.razor` para..."
+            @"(?:en\s+(?:la\s+)?ruta|archivo|fichero|para\s+(?:el\s+)?archivo|componente|pagina|modelo|servicio|contexto|modificar)\s+(?:`|['""])\s*(?<path>(?:(?:[\w\-\.]+[\/\\])+)?[\w\-\.]+\.(?:cs|razor|csproj))\s*(?:`|['""])" +
+
+            // Opción 2: Keywords como las anteriores, seguido de una ruta SIN comillas pero que parezca una ruta (contiene separadores de directorio o empieza con carpeta conocida).
+            // Ejemplo: "Tarea para el archivo Services/MiServicio.cs"
+            // Ejemplo: "Crear modelo Models/OtroModelo.cs"
+            @"|(?:en\s+(?:la\s+)?ruta|archivo|fichero|para\s+(?:el\s+)?archivo|componente|pagina|modelo|servicio|contexto|modificar)\s+(?<path>(?:(?:Models|Data|Services|Pages|Components|Layout|Shared)(?:[\/\\][\w\-\.]+)*|[\w\-\.]*[\/\\][\w\-\.]+)\.(?:cs|razor|csproj))" +
+
+            // Opción 3: Mención directa de archivos específicos en la raíz del proyecto (Program.cs, App.razor, etc.), opcionalmente precedidos por "en" o "modificar".
+            // Ejemplo: "Modificar Program.cs para..."
+            // Ejemplo: "En App.razor hacer..."
+            @"|(?:en|modificar)\s+['""]?\s*(?<path>Program\.cs|App\.razor|_Imports\.razor|Routes\.razor)\s*['""]?" +
+
+            // Opción 4: Rutas que comienzan con una carpeta conocida (Models, Data, Pages, etc.) sin keyword explícita antes.
+            // Ejemplo: "Pages/MiPagina.razor debe ser actualizada."
+            @"|['""]?\s*(?<path>(?:Models|Data|Services|Pages|Components|Layout|Shared)(?:[\/\\][\w\-\.]+)+\.(?:cs|razor|csproj))\s*['""]?" +
+
+            // Opción 5: (Fallback menos específico) Cualquier palabra que termine con .cs, .razor, .csproj y esté precedida por alguna keyword general.
+            // Este es el más propenso a errores si la descripción es ambigua, por eso va al final.
+            @"|(?:archivo|modelo|página|componente|servicio|DbContext|fichero|en|a|para|modificar)\s+['""]?\s*(?<path>[\w\-\.\s\\\/]+\.(cs|razor|csproj))\s*['""]?",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         private static readonly Regex FileNameExtractionRegex = new Regex( @"(?<filename>[\w\-\.]+?\.(cs|razor|csproj))", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         // Constructor using concrete GeminiClient
@@ -42,17 +67,20 @@ namespace Infraestructura
             {
                 Directory.CreateDirectory(rutaProyecto);
                 await GenerarCsprojAsync(nombreProyecto, rutaProyecto);
-                // Pasar Shared.Prompt a GenerarArchivosBaseAsync
-                await GenerarArchivosBaseAsync(nombreProyecto, rutaProyecto, prompt); // Pasar el prompt completo
+                await GenerarArchivosBaseAsync(nombreProyecto, rutaProyecto, prompt);
 
                 targetRelativePath = ExtractPathFromTask(tarea);
                 bool rutaExplicita = false;
                 if (targetRelativePath != null)
                 {
-                    _logger.LogDebug("Ruta potencial extraída: '{RelativePath}'", targetRelativePath);
+                    _logger.LogInformation("Ruta EXPLICITA extraída por Regex: '{RelativePath}'", targetRelativePath);
                     targetRelativePath = targetRelativePath.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar).Replace("Razor Pages", "Pages").Trim();
                     if (targetRelativePath.StartsWith(Path.DirectorySeparatorChar)) { targetRelativePath = targetRelativePath.Length > 1 ? targetRelativePath.Substring(1) : ""; }
-                    if (string.IsNullOrWhiteSpace(targetRelativePath) || targetRelativePath.Any(Path.GetInvalidPathChars().Contains)) { _logger.LogWarning("Ruta extraída inválida '{OriginalPath}'. Se inferirá.", targetRelativePath); targetRelativePath = null; }
+
+                    if (string.IsNullOrWhiteSpace(targetRelativePath) || targetRelativePath.Any(c => Path.GetInvalidPathChars().Contains(c) && c != Path.DirectorySeparatorChar && c != Path.AltDirectorySeparatorChar) ) {
+                         _logger.LogWarning("Ruta extraída '{OriginalPath}' contiene caracteres inválidos o es vacía después de la normalización. Se inferirá.", targetRelativePath);
+                         targetRelativePath = null;
+                    }
                     else
                     {
                          try
@@ -63,7 +91,7 @@ namespace Infraestructura
                                    _logger.LogError("RUTA PELIGROSA: '{RelativePath}' -> '{FullPath}' fuera de '{ProjectRoot}'. Tarea abortada.", targetRelativePath, rutaCompletaArchivo, rutaProyecto);
                                    return;
                               }
-                              _logger.LogInformation("Ruta EXPLICITA determinada: '{FullPath}'", rutaCompletaArchivo);
+                              _logger.LogInformation("Ruta EXPLICITA determinada y validada: '{FullPath}'", rutaCompletaArchivo);
                               rutaExplicita = true;
                          }
                          catch (Exception ex)
@@ -72,10 +100,9 @@ namespace Infraestructura
                               targetRelativePath = null;
                          }
                     }
-                } else { _logger.LogWarning("No se pudo extraer ruta explícita: '{Tarea}'. Se inferirá.", tarea); }
+                } else { _logger.LogWarning("No se pudo extraer ruta explícita de la tarea: '{Tarea}'. Se inferirá la ubicación.", tarea); }
 
                 string normalizedTargetPathForCheck = targetRelativePath ?? "";
-                // Adjusted to check Layout folder for NavMenu as per .NET 8 conventions
                 bool esModificacionBase = rutaExplicita &&
                                           (normalizedTargetPathForCheck.Equals("Layout" + Path.DirectorySeparatorChar + "NavMenu.razor", StringComparison.OrdinalIgnoreCase) ||
                                            normalizedTargetPathForCheck.Equals("Program.cs", StringComparison.OrdinalIgnoreCase)) &&
@@ -93,18 +120,17 @@ namespace Infraestructura
             catch (Exception ex) { _logger.LogError(ex, "❌ Error crítico procesando la tarea '{Tarea}'.", tarea); }
         }
 
-        // Método para crear archivo usando Shared.Prompt
         private async Task CrearNuevoArchivoAsync(string rutaProyecto, string tarea, string? targetRelativePath, bool rutaExplicita, Shared.Prompt prompt)
         {
             string codigoGenerado = "";
             string rawCodigoGenerado = "";
             string rutaCompletaArchivo = "";
             string nombreArchivo = "";
-            string tipoCodigo = "C#"; // Default
+            string tipoCodigo = "C#";
             try
             {
                 tipoCodigo = InferirTipoCodigo(tarea, targetRelativePath);
-                if (!rutaExplicita)
+                if (!rutaExplicita || targetRelativePath == null)
                 {
                     _logger.LogDebug("Ejecutando inferencia ruta/nombre CREACIÓN...");
                     if (tipoCodigo == "Razor") nombreArchivo = ExtractRazorFilename("", tarea); else nombreArchivo = ExtractCSharpFilename("", tarea);
@@ -113,32 +139,55 @@ namespace Infraestructura
                     _logger.LogInformation("Ruta INFERIDA nuevo archivo: {FullPath}", rutaCompletaArchivo);
                     targetRelativePath = Path.GetRelativePath(rutaProyecto, rutaCompletaArchivo);
                 } else {
-                    rutaCompletaArchivo = Path.GetFullPath(Path.Combine(rutaProyecto, targetRelativePath!));
+                    rutaCompletaArchivo = Path.GetFullPath(Path.Combine(rutaProyecto, targetRelativePath));
                     nombreArchivo = Path.GetFileName(rutaCompletaArchivo);
                 }
 
                 string promptParaGemini = CrearPromptParaTarea(prompt, tarea, tipoCodigo, rutaProyecto, targetRelativePath);
-                _logger.LogDebug("🔄 Llamando Gemini CREACIÓN...");
-                try
+                _logger.LogDebug("🔄 Llamando Gemini CREACIÓN (Potencialmente hasta 2 intentos) para '{File}'...", nombreArchivo);
+
+                for (int attempt = 1; attempt <= 2; attempt++)
                 {
-                     rawCodigoGenerado = await _gemini.GenerarAsync(promptParaGemini);
-                     codigoGenerado = LimpiarCodigoGemini(rawCodigoGenerado);
-                }
-                catch (Exception ex) when (ex.Message.Contains("503"))
-                {
-                     _logger.LogWarning(ex, "⚠️ Error 503 Gemini CREACIÓN '{File}'. Omitido.", nombreArchivo);
-                     return;
-                }
-                catch (Exception ex)
-                {
-                     _logger.LogError(ex, "❌ Error Gemini CREACIÓN '{File}'.", nombreArchivo);
-                     return;
+                    try
+                    {
+                        _logger.LogInformation("Intento {Attempt}/2 para generar '{File}'...", attempt, nombreArchivo);
+                        rawCodigoGenerado = await _gemini.GenerarAsync(promptParaGemini);
+                        codigoGenerado = LimpiarCodigoGemini(rawCodigoGenerado);
+                    }
+                    catch (Exception ex) when (ex.Message.Contains("503"))
+                    {
+                        _logger.LogWarning(ex, "⚠️ Error 503 Gemini CREACIÓN '{File}', Intento {Attempt}. Omitido.", nombreArchivo, attempt);
+                        return; // Exit if 503
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "❌ Error Gemini CREACIÓN '{File}', Intento {Attempt}.", nombreArchivo, attempt);
+                        return; // Exit on other Gemini errors
+                    }
+
+                    if (EsCodigoPlausible(codigoGenerado, nombreArchivo, tipoCodigo))
+                    {
+                        _logger.LogInformation("✅ Código generado para '{File}' pasó la plausibilidad en el intento {Attempt}.", nombreArchivo, attempt);
+                        break; // Success, exit loop and proceed to write
+                    }
+                    else
+                    {
+                        _logger.LogWarning("⚠️ Código generado CREACIÓN '{File}' NO PLAUSIBLE o vacío en el intento {Attempt}. Primeras 500 chars del contenido problemático:\n{CodigoProblematico}",
+                            nombreArchivo, attempt, string.IsNullOrEmpty(codigoGenerado) ? "[VACIO]" : codigoGenerado.Substring(0, Math.Min(500, codigoGenerado.Length)));
+                        if (attempt == 2) // Max attempts reached
+                        {
+                            _logger.LogError("❌ Fallaron ambos intentos de generar código plausible para '{File}'. Omitiendo archivo.", nombreArchivo);
+                            return; // Exit method after final failed attempt
+                        }
+                        _logger.LogInformation("Retrying code generation for '{File}' (Intento {NextAttempt}).", nombreArchivo, attempt + 1);
+                        await Task.Delay(500); // Optional short delay before retrying
+                    }
                 }
 
-                if (!EsCodigoPlausible(codigoGenerado, nombreArchivo, tipoCodigo)) 
+                if (string.IsNullOrWhiteSpace(codigoGenerado) || !EsCodigoPlausible(codigoGenerado, nombreArchivo, tipoCodigo))
                 {
-                    _logger.LogWarning("⚠️ Código generado CREACIÓN '{File}' NO PLAUSIBLE o vacío. Omitido. Primeras 500 chars del contenido problemático:\n{CodigoProblematico}", nombreArchivo, string.IsNullOrEmpty(codigoGenerado) ? "[VACIO]" : codigoGenerado.Substring(0, Math.Min(500, codigoGenerado.Length)));
-                    return; 
+                    _logger.LogWarning("⚠️ Código para '{File}' es vacío o no plausible después del bucle de reintento. No se escribirá el archivo.", nombreArchivo);
+                    return;
                 }
 
                 string? directoryPath = Path.GetDirectoryName(rutaCompletaArchivo);
@@ -156,7 +205,6 @@ namespace Infraestructura
             }
         }
 
-        // Método para modificar archivo usando Shared.Prompt
         private async Task ModificarArchivoBaseAsync(string filePath, string taskDescription, Shared.Prompt promptContext)
         {
              _logger.LogInformation("🔧 Modificando base: {FilePath} Tarea: '{Task}'", filePath, taskDescription);
@@ -188,10 +236,10 @@ namespace Infraestructura
              }
 
             string fileTypeForPlausibility = Path.GetExtension(filePath).ToLowerInvariant() == ".cs" ? "C#" : "Razor";
-            if (!EsCodigoPlausible(modifiedContentClean, Path.GetFileName(filePath), fileTypeForPlausibility)) 
+            if (!EsCodigoPlausible(modifiedContentClean, Path.GetFileName(filePath), fileTypeForPlausibility))
             {
                 _logger.LogWarning("⚠️ Código modificado '{File}' NO PLAUSIBLE o vacío. No se sobrescribe. Primeras 500 chars del contenido problemático:\n{CodigoProblematico}", Path.GetFileName(filePath), string.IsNullOrEmpty(modifiedContentClean) ? "[VACIO]" : modifiedContentClean.Substring(0, Math.Min(500, modifiedContentClean.Length)));
-                return; 
+                return;
             }
 
              if (originalContent.Length > 50 && Math.Abs(originalContent.Length - modifiedContentClean.Length) > originalContent.Length * 0.75)
@@ -199,7 +247,7 @@ namespace Infraestructura
                   _logger.LogWarning("⚠️ Código modificado {File} difiere mucho en longitud (Original: {OrigLen}, Nuevo: {NewLen}). NO SE SOBREESCRIBIRÁ.", Path.GetFileName(filePath), originalContent.Length, modifiedContentClean.Length);
                   return;
              }
-              if (string.IsNullOrWhiteSpace(originalContent) && modifiedContentClean.Length > 10000) 
+              if (string.IsNullOrWhiteSpace(originalContent) && modifiedContentClean.Length > 10000)
              {
                   _logger.LogWarning("⚠️ Código modificado {File} es muy grande ({NewLen} chars) partiendo de un original vacío/pequeño. NO SE SOBREESCRIBIRÁ.", Path.GetFileName(filePath), modifiedContentClean.Length);
                   return;
@@ -217,12 +265,11 @@ namespace Infraestructura
              }
         }
 
-        // Método para crear prompt de modificación usando Shared.Prompt
         private string CreateModificationPrompt(string targetFilePath, string taskDescription, string originalCode, Shared.Prompt promptContext)
         {
             string fileName = Path.GetFileName(targetFilePath);
             string fileType = Path.GetExtension(fileName).ToLowerInvariant() == ".cs" ? "C#" : "Blazor Razor";
-            string langHint = fileType == "C#" ? "csharp" : "html"; // html for razor is fine for markdown
+            string langHint = fileType == "C#" ? "csharp" : "html";
             return @$"Contexto General del Proyecto:
 {promptContext.Descripcion}
 Tarea Específica de Modificación:
@@ -252,11 +299,10 @@ Instrucciones PRECISAS:
 10. NO uses bloques de markdown (como ```csharp, ```html o ```razor) alrededor del código final. Solo el contenido puro del archivo.";
         }
 
-        // Método para generar archivos base usando Shared.Prompt
-        private async Task GenerarArchivosBaseAsync(string nombreProyecto, string rutaProyecto, Shared.Prompt prompt) 
+        private async Task GenerarArchivosBaseAsync(string nombreProyecto, string rutaProyecto, Shared.Prompt prompt)
         {
             string projectNamespace = SanitizeNamespace(nombreProyecto);
-            string promptTitulo = prompt.Titulo; 
+            string promptTitulo = prompt.Titulo;
 
             var programPath = Path.Combine(rutaProyecto, "Program.cs");
             if (!File.Exists(programPath))
@@ -267,35 +313,35 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-// using {projectNamespace}.Data; 
-// using Microsoft.EntityFrameworkCore; 
+// using {projectNamespace}.Data;
+// using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents(); 
+    .AddInteractiveServerComponents();
 
 // builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//     options.UseInMemoryDatabase(""AppDb"")); 
+//     options.UseInMemoryDatabase(""AppDb""));
 
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {{
     app.UseExceptionHandler(""/Error"", createScopeForErrors: true);
-    // app.UseHsts(); 
+    // app.UseHsts();
 }}
 
-// app.UseHttpsRedirection(); 
+// app.UseHttpsRedirection();
 
 app.UseStaticFiles();
-app.UseAntiforgery(); 
+app.UseAntiforgery();
 
-app.MapRazorComponents<App>() 
+app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-// app.MapFallbackToFile(""/index.html""); 
+// app.MapFallbackToFile(""/index.html"");
 
 app.Run();
 ";
@@ -331,7 +377,7 @@ app.Run();
             var importsPath = Path.Combine(rutaProyecto, "_Imports.razor");
             if (!File.Exists(importsPath))
             {
-                _logger.LogDebug("Generando _Imports.razor");
+                _logger.LogDebug("Generando _Imports.razor con usings para Models, Data, Services en: {Path}", importsPath);
                 var importsContent = @$"@using System.Net.Http
 @using System.Net.Http.Json
 @using Microsoft.AspNetCore.Components.Forms
@@ -341,8 +387,11 @@ app.Run();
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using Microsoft.JSInterop
 @using {projectNamespace}
-@using {projectNamespace}.Components 
-@using {projectNamespace}.Layout 
+@using {projectNamespace}.Models
+@using {projectNamespace}.Data
+@using {projectNamespace}.Services
+@using {projectNamespace}.Components
+@using {projectNamespace}.Layout
 ";
                 await File.WriteAllTextAsync(importsPath, importsContent);
             }
@@ -351,7 +400,7 @@ app.Run();
              if (!File.Exists(routesPath))
             {
                 _logger.LogDebug("Generando Routes.razor base...");
-                var routesContent = @$"@using {projectNamespace}.Layout 
+                var routesContent = @$"@using {projectNamespace}.Layout
 
 <Router AppAssembly=""@typeof(Program).Assembly"">
     <Found Context=""routeData"">
@@ -369,7 +418,7 @@ app.Run();
                  await File.WriteAllTextAsync(routesPath, routesContent);
             }
 
-            var layoutFolder = Path.Combine(rutaProyecto, "Layout"); 
+            var layoutFolder = Path.Combine(rutaProyecto, "Layout");
             Directory.CreateDirectory(layoutFolder);
             _logger.LogDebug("Generando carpeta Layout en: {Path}", layoutFolder);
 
@@ -378,7 +427,26 @@ app.Run();
             Directory.CreateDirectory(componentsFolder);
             _logger.LogDebug("Generando carpeta Components en: {Path}", componentsFolder);
 
-            var pagesFolder = Path.Combine(rutaProyecto, "Pages"); 
+            var placeholderComponentPath = Path.Combine(componentsFolder, "_ComponentsPlaceholder.cs");
+            if (!File.Exists(placeholderComponentPath))
+            {
+                var placeholderContent = @$"// This file is intentionally left almost empty.
+// It's needed to ensure the {projectNamespace}.Components namespace is recognized by the compiler.
+namespace {projectNamespace}.Components
+{{
+    internal class _ComponentsPlaceholder
+    {{
+        // This class serves as a placeholder to define the namespace.
+        // Common application components can be added here or in separate files within this folder.
+    }}
+}}
+";
+                await File.WriteAllTextAsync(placeholderComponentPath, placeholderContent);
+                _logger.LogDebug("Generando placeholder _ComponentsPlaceholder.cs en: {Path} para definir el namespace {ProjectNamespace}.Components", placeholderComponentPath, projectNamespace);
+            }
+
+
+            var pagesFolder = Path.Combine(rutaProyecto, "Pages");
             Directory.CreateDirectory(pagesFolder);
             _logger.LogDebug("Generando carpeta Pages en: {Path}", pagesFolder);
 
@@ -451,7 +519,7 @@ app.Run();
                 }
             }
 
-            var errorPagePath = Path.Combine(pagesFolder, "Error.razor"); 
+            var errorPagePath = Path.Combine(pagesFolder, "Error.razor");
             if (!File.Exists(errorPagePath))
             {
                 _logger.LogDebug("Generando Error.razor en Pages");
@@ -485,7 +553,7 @@ else
     [Parameter]
     public Exception? Exception {{ get; set; }}
 
-    private bool ShowDetailedErrors => !string.IsNullOrEmpty(Exception?.Message); 
+    private bool ShowDetailedErrors => !string.IsNullOrEmpty(Exception?.Message);
 
     protected override void OnInitialized()
     {{
@@ -524,7 +592,7 @@ Welcome to your new app '{promptTitulo}'.
                 await File.WriteAllTextAsync(bootstrapCssPath, @"/* Download Bootstrap 5+ and place bootstrap.min.css here */");
             }
 
-            var appCssPath = Path.Combine(cssFolder, "app.css"); 
+            var appCssPath = Path.Combine(cssFolder, "app.css");
             if (!File.Exists(appCssPath))
             {
                 _logger.LogDebug("Generando app.css");
@@ -544,23 +612,36 @@ html, body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
             }
         }
 
-        // Método para crear prompt de tarea usando Shared.Prompt
         private string CrearPromptParaTarea(Shared.Prompt promptOriginal, string tareaEspecifica, string tipoCodigo, string rutaProyecto, string? targetRelativePath)
         {
             string formatoCodigo = tipoCodigo == "Razor" ? "un componente Blazor (.razor)" : "una clase C# (.cs)";
             string nombreArchivo = targetRelativePath != null ? Path.GetFileName(targetRelativePath) : "(Nombre a inferir)";
-            string projectNamespace = SanitizeNamespace(promptOriginal.Titulo); 
+            string projectNamespace = SanitizeNamespace(promptOriginal.Titulo);
             string instruccionesAdicionales = "";
 
-            if (tipoCodigo == "Razor") // General instructions for all Razor files
+            if (tipoCodigo == "Razor")
             {
                  instruccionesAdicionales += @$"
-            **Importante para Páginas/Componentes Razor:**
-            - **Asegúrate de incluir los siguientes `using` statements si son necesarios para la tarea, usualmente al inicio del archivo o dentro del bloque `@code {{ ... }}`:**
-                - `@using {projectNamespace}.Models;` (si la página usa clases de modelo).
-                - `@using {projectNamespace}.Data;` (si la página usa el DbContext directamente o clases del namespace Data).
-                - `@using {projectNamespace}.Services;` (si la página usa clases de servicio).
+            **Importante para Páginas/Componentes Razor - Inclusión de Namespaces:**
+            - **Verifica si los siguientes namespaces comunes ya están en `_Imports.razor`. Si no lo están, considera añadirlos allí para disponibilidad global, o directamente en este archivo si es más específico:**
+                - `@using {projectNamespace}.Models;` (MUY COMÚNMENTE NECESARIO para cualquier página que maneje datos de la aplicación)
+                - `@using {projectNamespace}.Data;` (COMÚNMENTE NECESARIO si se interactúa con DbContext o entidades directamente en algunas páginas, aunque los servicios son preferibles)
+                - `@using {projectNamespace}.Services;` (COMÚNMENTE NECESARIO si la página va a invocar lógica de negocio o acceso a datos a través de servicios)
+                - `@using {projectNamespace}.Layout;` (Si usas componentes de Layout específicos)
+                - `@using {projectNamespace}.Components;` (Si usas componentes compartidos de UI)
+            - **Para este archivo específico (`{nombreArchivo}`), asegúrate ABSOLUTAMENTE que todos los namespaces para los tipos que utilices (modelos, DbContext, servicios, etc.) estén referenciados, ya sea vía `_Imports.razor` o con un `@using` directo en este archivo.**
             - Incluye cualquier otro `using` estándar necesario (ej. `System.Collections.Generic`, `Microsoft.AspNetCore.Components`).";
+
+                // Conditionally add anti-duplication note for Index or list-like pages
+                string lowerTarea = tareaEspecifica.ToLowerInvariant();
+                string lowerNombreArchivo = nombreArchivo.ToLowerInvariant();
+                if (lowerNombreArchivo.Contains("index.razor") ||
+                    lowerTarea.Contains("index.razor") ||
+                    (lowerTarea.Contains("listar") && (lowerTarea.Contains("tabla") || lowerTarea.Contains("grid"))) ||
+                    lowerTarea.Contains("página de listado"))
+                {
+                    instruccionesAdicionales += "\n            **Nota Adicional de Codificación:** Al escribir el bloque `@code`, presta mucha atención para NO definir la misma variable, campo (field), o propiedad más de una vez. Cada nombre de variable debe ser único dentro de su scope para evitar errores de compilación.";
+                }
             }
 
             if (EsTareaCrud(tareaEspecifica))
@@ -596,8 +677,8 @@ html, body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
             - Implementa todos los métodos de la interfaz, usando el DbContext para interactuar con la base de datos.
             - Incluye manejo básico de errores (try-catch) y logging si es posible.
             - Asegúrate de tener todos los 'using' necesarios (ej. 'using Microsoft.EntityFrameworkCore;', 'using {projectNamespace}.Models;', 'using {projectNamespace}.Data;').";
-                
-                if (tipoCodigo == "Razor") // CRUD specific instructions for Razor, appended after general Razor using instructions.
+
+                if (tipoCodigo == "Razor")
                 {
                     instruccionesAdicionales += @$"
             **Si es un Componente/Página Razor (.razor) para CRUD:**
@@ -633,7 +714,6 @@ html, body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
                 }
             }
 
-
             string rutaInfo = targetRelativePath != null ? $"para el archivo '{targetRelativePath}'" : $"que se guardará como '{nombreArchivo}' (aproximadamente)";
             return @$"Contexto General del Proyecto (Prompt Original):
 {promptOriginal.Descripcion}
@@ -652,46 +732,55 @@ Instrucciones Generales para la Generación de Código:
 RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correcto para el archivo solicitado. NO incluyas NINGUNA explicación, introducción, resumen, notas, advertencias, ni texto adicional antes o después del bloque de código. NO uses bloques de markdown (como ```csharp, ```html o ```razor) alrededor del código final. Solo el contenido puro del archivo.";
         }
 
-        // --- Métodos Helper (sin cambios funcionales) ---
         #region Helper Methods
 
-        /// <summary>
-        /// Extracts a relative file path from the task description using refined Regex.
-        /// Returns null if no valid path is confidently extracted.
-        /// </summary>
         private string? ExtractPathFromTask(string task)
         {
             Match match = PathExtractionRegex.Match(task);
-            if (match.Success && match.Groups["path"].Success)
+            if (match.Success && match.Groups["path"].Success && !string.IsNullOrWhiteSpace(match.Groups["path"].Value))
             {
                 string extractedPath = match.Groups["path"].Value.Trim();
+                 _logger.LogDebug("PathExtractionRegex (v2) encontró path inicial: '{ExtractedPath}' en tarea: '{Task}'", extractedPath, task);
+
+                // Remover comillas/backticks si están presentes alrededor del path capturado
+                if ((extractedPath.StartsWith("'") && extractedPath.EndsWith("'")) ||
+                    (extractedPath.StartsWith("\"") && extractedPath.EndsWith("\"")) ||
+                    (extractedPath.StartsWith("`") && extractedPath.EndsWith("`")))
+                {
+                    extractedPath = extractedPath.Substring(1, extractedPath.Length - 2).Trim();
+                     _logger.LogDebug("Path después de remover comillas/backticks: '{ExtractedPath}'", extractedPath);
+                }
+
                 // Basic sanity check on extracted path
                 if (!string.IsNullOrWhiteSpace(extractedPath) &&
                     (extractedPath.EndsWith(".cs") || extractedPath.EndsWith(".razor") || extractedPath.EndsWith(".csproj")) &&
-                     extractedPath.Length > 3 && !extractedPath.Contains(" ")) // Avoid paths with spaces for now
+                     extractedPath.Length > 3 &&
+                     !extractedPath.Contains(" ")) // Paths con espacios son problemáticos si no están bien manejados/citados consistentemente
                 {
-                    _logger.LogTrace("PathExtractionRegex encontró: '{ExtractedPath}'", extractedPath);
+                    _logger.LogInformation("PathExtractionRegex (v2) extrajo path válido: '{ExtractedPath}'", extractedPath);
                     return extractedPath;
                 }
+                else
+                {
+                    _logger.LogWarning("PathExtractionRegex (v2) extrajo un path, pero fue invalidado por sanity checks: '{ExtractedPath}'", extractedPath);
+                }
             }
-            _logger.LogDebug("PathExtractionRegex no encontró ruta válida en: '{Task}'. Intentando FileNameExtractionRegex.", task);
-            // Fallback to FileNameExtractionRegex if the primary fails
+
+            _logger.LogDebug("PathExtractionRegex (v2) no encontró un path explícito válido en: '{Task}'. Intentando FileNameExtractionRegex.", task);
             match = FileNameExtractionRegex.Match(task);
             if (match.Success && match.Groups["filename"].Success)
             {
                 string filename = match.Groups["filename"].Value.Trim();
                 if (!string.IsNullOrWhiteSpace(filename) && filename.Length > 3)
                 {
-                    _logger.LogDebug("FileNameExtractionRegex encontró: '{Filename}'. Se usará para inferencia.", filename);
-                    // Return null to indicate folder inference is needed
-                    return null;
+                    _logger.LogDebug("FileNameExtractionRegex encontró filename: '{Filename}'. Se usará para inferencia de carpeta.", filename);
+                    return null; // Indica que se necesita inferir la carpeta, pero tenemos un nombre de archivo.
                 }
             }
 
-            _logger.LogDebug("Ningún Regex pudo extraer una ruta/nombre de archivo válido de la tarea: {Task}", task);
+            _logger.LogWarning("Ningún Regex pudo extraer una ruta/nombre de archivo válido de la tarea: {Task}", task);
             return null;
         }
-
 
         private bool IsPathWithinProject(string fullPath, string projectRootPath)
         {
@@ -703,24 +792,21 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
                   {
                        normalizedProjectRootPath += Path.DirectorySeparatorChar;
                   }
-                  // Check if the file is directly in the root (allow specific base files)
                   if ((Path.GetDirectoryName(normalizedFullPath) ?? "").Equals(Path.GetFullPath(projectRootPath), StringComparison.OrdinalIgnoreCase))
                   {
                        string fileNameLower = Path.GetFileName(normalizedFullPath).ToLowerInvariant();
-                       if(fileNameLower == "program.cs" || fileNameLower == "app.razor" || fileNameLower == "_imports.razor" || fileNameLower.EndsWith(".csproj") || fileNameLower == "routes.razor") // Added Routes.razor
+                       if(fileNameLower == "program.cs" || fileNameLower == "app.razor" || fileNameLower == "_imports.razor" || fileNameLower.EndsWith(".csproj") || fileNameLower == "routes.razor")
                        {
                             return true;
                        }
                        _logger.LogWarning("Archivo '{FileName}' detectado en la raíz del proyecto, pero no es un archivo base esperado.", Path.GetFileName(normalizedFullPath));
-                       // return false; // Decide if non-base files in root are allowed
                   }
-                  // Check if the path starts with the project root directory
                   return normalizedFullPath.StartsWith(normalizedProjectRootPath, StringComparison.OrdinalIgnoreCase);
              }
              catch (Exception ex)
              {
                   _logger.LogWarning(ex, "Error al validar ruta '{FullPath}' dentro de '{ProjectRootPath}'", fullPath, projectRootPath);
-                  return false; // Safer default
+                  return false;
              }
         }
 
@@ -730,13 +816,9 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
 
             var lines = codigo.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None).ToList();
 
-            // 1. Remove markdown code fences
-            // Ensure there are lines to check before accessing Last()
             if (lines.Any() && lines[0].Trim().StartsWith("```")) { lines.RemoveAt(0); }
             if (lines.Any() && lines.Last().Trim() == "```") { lines.RemoveAt(lines.Count - 1); }
 
-
-            // 2. Remove common introductory/concluding phrases (conservative approach)
             string[] commonPhrases = {
                 "here's the code", "here is the code", "okay, here is the", "sure, here is the", "certainly, here is the",
                 "this is the code", "the code is as follows", "find the code below", "below is the code",
@@ -748,14 +830,13 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
                 "i've made the requested changes", "the changes are as follows"
             };
 
-            // Check and remove from the beginning
-            for (int i = 0; i < 3 && lines.Any(); i++) // Check first 3 lines
+            for (int i = 0; i < 3 && lines.Any(); i++)
             {
                 var trimmedLowerLine = lines[0].Trim().ToLowerInvariant();
                 bool removed = false;
                 foreach (var phrase in commonPhrases)
                 {
-                    if (trimmedLowerLine.StartsWith(phrase) || trimmedLowerLine.EndsWith(phrase)) // Also check if the line *is* the phrase
+                    if (trimmedLowerLine.StartsWith(phrase) || trimmedLowerLine.EndsWith(phrase))
                     {
                         _logger.LogTrace("LimpiarCodigoGemini: Removiendo línea introductoria: '{Line}'", lines[0]);
                         lines.RemoveAt(0);
@@ -763,17 +844,15 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
                         break;
                     }
                 }
-                if (!removed) break; // Stop if a line is not a common phrase
+                if (!removed) break;
             }
 
-            // Check and remove from the end
-            for (int i = 0; i < 3 && lines.Any(); i++) // Check last 3 lines
+            for (int i = 0; i < 3 && lines.Any(); i++)
             {
                 var trimmedLowerLine = lines.Last().Trim().ToLowerInvariant();
                  bool removed = false;
                 foreach (var phrase in commonPhrases)
                 {
-                    // For concluding remarks, 'contains' might be too broad, stick to exact or starts/ends with
                     if (trimmedLowerLine.StartsWith(phrase) || trimmedLowerLine.EndsWith(phrase) || trimmedLowerLine == phrase)
                     {
                         _logger.LogTrace("LimpiarCodigoGemini: Removiendo línea conclusiva: '{Line}'", lines.Last());
@@ -782,19 +861,17 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
                         break;
                     }
                 }
-                 if (!removed) break; // Stop if a line is not a common phrase
+                 if (!removed) break;
             }
-            
+
             var processedLines = lines.Select(l => l.TrimEnd()).ToList();
-            // Remove empty lines from start
-            while (processedLines.Any() && string.IsNullOrWhiteSpace(processedLines[0])) 
-            { 
-                processedLines.RemoveAt(0); 
+            while (processedLines.Any() && string.IsNullOrWhiteSpace(processedLines[0]))
+            {
+                processedLines.RemoveAt(0);
             }
-            // Remove empty lines from end
-            while (processedLines.Any() && string.IsNullOrWhiteSpace(processedLines.Last())) 
-            { 
-                processedLines.RemoveAt(processedLines.Count - 1); 
+            while (processedLines.Any() && string.IsNullOrWhiteSpace(processedLines.Last()))
+            {
+                processedLines.RemoveAt(processedLines.Count - 1);
             }
 
             return string.Join(Environment.NewLine, processedLines).Trim();
@@ -810,15 +887,15 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
 
             var lines = codigo.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
             var nonCommentLines = lines.Where(l =>
-                !l.TrimStart().StartsWith("//") && // C#, C++ style comments
-                !l.TrimStart().StartsWith("/*") && // Start of C-style multi-line comment
-                !(l.TrimStart().StartsWith("*") && !l.TrimStart().StartsWith("*/") && lines.Any(prevL => prevL.TrimStart().StartsWith("/*") && !prevL.TrimEnd().EndsWith("*/"))) && // Middle of C-style multi-line comment
-                !l.TrimStart().StartsWith("@*") && // Razor comment start
-                !(l.TrimStart().StartsWith("*") && !l.TrimStart().StartsWith("*@") && lines.Any(prevL => prevL.TrimStart().StartsWith("@*") && !prevL.TrimEnd().EndsWith("*@"))) // Middle of Razor comment
+                !l.TrimStart().StartsWith("//") &&
+                !l.TrimStart().StartsWith("/*") &&
+                !(l.TrimStart().StartsWith("*") && !l.TrimStart().StartsWith("*/") && lines.Any(prevL => prevL.TrimStart().StartsWith("/*") && !prevL.TrimEnd().EndsWith("*/"))) &&
+                !l.TrimStart().StartsWith("@*") &&
+                !(l.TrimStart().StartsWith("*") && !l.TrimStart().StartsWith("*@") && lines.Any(prevL => prevL.TrimStart().StartsWith("@*") && !prevL.TrimEnd().EndsWith("*@")))
             ).Select(l => l.Trim()).Where(l => !string.IsNullOrEmpty(l)).ToList();
 
 
-            if (nonCommentLines.Count == 0) 
+            if (nonCommentLines.Count == 0)
             {
                 _logger.LogWarning("⚠️ Plausibility check failed for '{FileName}': No hay líneas de código que no sean comentarios o vacías. Total lines: {TotalLines}", fileName, lines.Length);
                 return false;
@@ -833,24 +910,24 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
                 if (!hasNamespace) _logger.LogWarning("⚠️ Plausibility check C# ('{FileName}'): Parece faltar 'namespace'.", fileName);
                 if (!hasTypeDefinition) _logger.LogWarning("⚠️ Plausibility check C# ('{FileName}'): Parece faltar definición de tipo (class, interface, etc.).", fileName);
                 if (!hasBraces) _logger.LogWarning("⚠️ Plausibility check C# ('{FileName}'): Parece faltar llaves '{{' o '}}'.", fileName);
-                
-                if (!hasNamespace && !hasTypeDefinition && nonCommentLines.Count < 5) { 
+
+                if (!hasNamespace && !hasTypeDefinition && nonCommentLines.Count < 5) {
                      _logger.LogWarning("⚠️ Plausibility check C# ('{FileName}') FAILED: Muy pocas líneas y faltan namespace y definición de tipo.", fileName);
                      return false;
                 }
-                if (!hasTypeDefinition && nonCommentLines.Count < 3) { 
+                if (!hasTypeDefinition && nonCommentLines.Count < 3) {
                      _logger.LogWarning("⚠️ Plausibility check C# ('{FileName}') FAILED: Muy pocas líneas y falta definición de tipo.", fileName);
                      return false;
                 }
-                 if (!hasBraces && nonCommentLines.Count < 2) { 
+                 if (!hasBraces && nonCommentLines.Count < 2) {
                      _logger.LogWarning("⚠️ Plausibility check C# ('{FileName}') FAILED: Muy pocas líneas y faltan llaves.", fileName);
                      return false;
                 }
             }
             else if (tipoCodigo == "Razor")
             {
-                bool hasHtml = nonCommentLines.Any(l => l.Contains("<") && l.Contains(">") && !l.StartsWith("@")); 
-                bool hasAtDirectives = nonCommentLines.Any(l => l.StartsWith("@") && !l.StartsWith("@@")); 
+                bool hasHtml = nonCommentLines.Any(l => l.Contains("<") && l.Contains(">") && !l.StartsWith("@"));
+                bool hasAtDirectives = nonCommentLines.Any(l => l.StartsWith("@") && !l.StartsWith("@@"));
                 bool hasCodeBlockContent = false;
                 var codeBlockIndex = nonCommentLines.FindIndex(l => l.Trim() == "@code");
                 if (codeBlockIndex != -1 && codeBlockIndex < nonCommentLines.Count -1)
@@ -863,14 +940,14 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
                     _logger.LogWarning("⚠️ Plausibility check Razor ('{FileName}') FAILED: No se encontraron tags HTML, ni directivas '@' significativas, ni contenido en bloque '@code'.", fileName);
                     return false;
                 }
-                
-                bool isLikelyPage = fileName.Contains("Page", StringComparison.OrdinalIgnoreCase) || 
+
+                bool isLikelyPage = fileName.Contains("Page", StringComparison.OrdinalIgnoreCase) ||
                                     Regex.IsMatch(fileName, @"(Index|Create|Edit|Details|Delete|List)\.razor", RegexOptions.IgnoreCase);
                 if (isLikelyPage && !nonCommentLines.Any(l => l.StartsWith("@page")))
                 {
                      _logger.LogWarning("⚠️ Plausibility check Razor ('{FileName}'): Parece una página pero no tiene directiva '@page'. Podría ser un error.", fileName);
                 }
-                 if (nonCommentLines.Count < 1 && !hasHtml && !hasCodeBlockContent) 
+                 if (nonCommentLines.Count < 1 && !hasHtml && !hasCodeBlockContent)
                 {
                      _logger.LogWarning("⚠️ Plausibility check Razor ('{FileName}') FAILED: Muy pocas líneas ({Count}) sin HTML claro o contenido en bloque de código.", fileName, nonCommentLines.Count);
                     return false;
@@ -893,12 +970,10 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
                   if (targetRelativePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)) return "C#";
              }
              var tLower = tarea.ToLowerInvariant();
-             // Prioritize Razor if UI-related keywords are present
              if (tLower.Contains(".razor") || tLower.Contains("página") || tLower.Contains("componente") || tLower.Contains(" vista ") || tLower.Contains(" ui ") || (tLower.Contains("interfaz") && !tLower.Contains("servicio")))
              {
                   return "Razor";
              }
-             // Default to C#
              return "C#";
         }
 
@@ -913,7 +988,7 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
         public string SanitizeFileName(string input)
         {
              var sb = new StringBuilder();
-             bool lastWasInvalid = true; // Treat start as invalid char context
+             bool lastWasInvalid = true;
              foreach (var c in input.Trim())
              {
                   if (char.IsLetterOrDigit(c))
@@ -921,11 +996,11 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
                        sb.Append(c);
                        lastWasInvalid = false;
                   }
-                  else if (c == '_' || c == '-') // Allow underscore and hyphen
+                  else if (c == '_' || c == '-')
                   {
-                      if (!lastWasInvalid) // Avoid consecutive invalid chars
+                      if (!lastWasInvalid)
                       {
-                         sb.Append(c); // Use hyphen as separator generally
+                         sb.Append(c);
                          lastWasInvalid = true;
                       }
                   }
@@ -933,23 +1008,17 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
                   {
                        if (!lastWasInvalid)
                        {
-                            sb.Append('-'); // Replace whitespace with hyphen
+                            sb.Append('-');
                             lastWasInvalid = true;
                        }
                   }
-                  // Ignore other invalid characters
              }
-             // Remove trailing invalid char if any
              if (sb.Length > 0 && (sb[^1] == '-' || sb[^1] == '_'))
              {
                   sb.Length--;
              }
-
              var result = sb.ToString();
-             // Optional: Convert to lowercase
-             // result = result.ToLowerInvariant();
-
-             const int maxLength = 50; // Max filename length constraint
+             const int maxLength = 50;
              if (result.Length > maxLength)
              {
                   result = result.Substring(0, maxLength).TrimEnd('-', '_');
@@ -957,77 +1026,58 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
              return string.IsNullOrWhiteSpace(result) ? "proyecto-generado" : result;
         }
 
-
         private string ExtractCSharpFilename(string code, string tareaFallback)
         {
-            // Try to find class/interface/record/enum/struct definition
             var match = Regex.Match(code, @"\b(?:public\s+|internal\s+)?(?:sealed\s+|abstract\s+)?(?:partial\s+)?(class|interface|record|enum|struct)\s+([A-Za-z_][\w]*)");
             if (match.Success)
             {
                 return match.Groups[2].Value + ".cs";
             }
-
             _logger.LogWarning("No se pudo extraer nombre C# del código. Fallback de tarea: {Tarea}", tareaFallback);
-
-            // Try extracting from task description using FileNameExtractionRegex first
             Match nameMatch = FileNameExtractionRegex.Match(tareaFallback);
             if (nameMatch.Success && nameMatch.Groups["filename"].Success && nameMatch.Groups["filename"].Value.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
             {
-                 // Sanitize the extracted filename
                  return SanitizeFileName(Path.GetFileNameWithoutExtension(nameMatch.Groups["filename"].Value)) + ".cs";
             }
-
-            // Try extracting common patterns like "crear clase X"
             string nombreDeTarea = Regex.Match(tareaFallback, @"\b(?:crear|implementar|generar)\s+(?:la\s+)?(?:clase|interfaz|servicio|modelo|contexto|enum|componente|record|struct)?\s*'?([A-Za-z_]\w+)'?").Groups[1].Value;
             if (!string.IsNullOrWhiteSpace(nombreDeTarea))
             {
                 return SanitizeFileName(nombreDeTarea) + ".cs";
             }
-
             _logger.LogWarning("Fallback GUID nombre archivo C#.");
-            return "Clase_" + Guid.NewGuid().ToString("N").Substring(0, 8) + ".cs"; // Use N format for guid
+            return "Clase_" + Guid.NewGuid().ToString("N").Substring(0, 8) + ".cs";
         }
 
         private string ExtractRazorFilename(string code, string tareaFallback)
         {
-            // Try extracting from @page directive
             var pageMatch = Regex.Match(code, @"@page\s+""\/?([\w\/-]+)(?:/{.*?})?/??""");
             if (pageMatch.Success)
             {
                 var parts = pageMatch.Groups[1].Value.Split('/');
-                var lastPart = parts.LastOrDefault(p => !string.IsNullOrWhiteSpace(p) && !p.Contains('{')); // Find last non-parameter part
+                var lastPart = parts.LastOrDefault(p => !string.IsNullOrWhiteSpace(p) && !p.Contains('{'));
                 if (!string.IsNullOrWhiteSpace(lastPart))
                 {
                     return UppercaseFirst(SanitizeFileName(lastPart)) + ".razor";
                 }
             }
-
-            // Try extracting from @code block class definition
             var codeClassMatch = Regex.Match(code, @"@code\s*\{?\s*(?:public\s+)?(?:partial\s+)?class\s+([A-Z][A-Za-z_]\w*)\b", RegexOptions.Singleline);
             if (codeClassMatch.Success)
             {
                 return codeClassMatch.Groups[1].Value + ".razor";
             }
-
             _logger.LogWarning("No se pudo extraer nombre Razor del código. Fallback de tarea: {Tarea}", tareaFallback);
-
-            // Try extracting from task description using FileNameExtractionRegex first
             Match nameMatch = FileNameExtractionRegex.Match(tareaFallback);
              if (nameMatch.Success && nameMatch.Groups["filename"].Success && nameMatch.Groups["filename"].Value.EndsWith(".razor", StringComparison.OrdinalIgnoreCase))
             {
-                 // Sanitize and ensure PascalCase
                  return UppercaseFirst(SanitizeFileName(Path.GetFileNameWithoutExtension(nameMatch.Groups["filename"].Value))) + ".razor";
             }
-
-            // Try extracting common patterns like "crear pagina X"
             string nombreDeTarea = Regex.Match(tareaFallback, @"\b(?:crear|implementar|generar)\s+(?:la\s+)?(?:página|componente|vista)?\s*'?([A-Za-z_]\w+)'?").Groups[1].Value;
             if (!string.IsNullOrWhiteSpace(nombreDeTarea))
             {
                 return UppercaseFirst(SanitizeFileName(nombreDeTarea)) + ".razor";
             }
-
             _logger.LogWarning("Fallback GUID nombre archivo Razor.");
-            return "Componente_" + Guid.NewGuid().ToString("N").Substring(0, 8) + ".razor"; // Use N format for guid
+            return "Componente_" + Guid.NewGuid().ToString("N").Substring(0, 8) + ".razor";
         }
 
         private string UppercaseFirst(string s)
@@ -1040,24 +1090,21 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
         private string InferirSubcarpeta(string tarea, string codigo)
         {
             var t = tarea.ToLowerInvariant();
-            var c = codigo.ToLowerInvariant(); // Lowercase code content for matching
-
-            // Check specific keywords and code patterns
+            var c = codigo.ToLowerInvariant();
             if (t.Contains("controlador") || t.Contains("controller") || t.Contains(" api ") || c.Contains("[apicontroller]") || c.Contains("controllerbase")) return "Controllers";
             if (t.Contains("contexto") || t.Contains("dbcontext") || t.Contains("base de datos") || t.Contains("database") || t.Contains("repositorio") || t.Contains("repository") || t.Contains("unit of work") || c.Contains(" entityframeworkcore") || c.Contains(": dbcontext")) return "Data";
-            if (t.Contains("servicio") || t.Contains("service") || t.Contains("email") || t.Contains("exportar") || t.Contains("login") || t.Contains("fachada") || t.Contains("manager") || t.Contains("helper") || t.Contains("client") || t.Contains("logic") || t.Contains("business")) return "Services"; // Added common service/logic terms
-            if (c.Contains("@page ") || (t.Contains("página") && t.Contains(".razor"))) return "Pages"; // Routable components typically go in Pages
-            if (t.Contains("layout") || (t.Contains(".razor") && (t.Contains("layout/") || t.Contains("layout\\")))) return "Layout"; // .NET 8 layout convention
-            if (t.Contains("navmenu") || (t.Contains(".razor") && (t.Contains("shared/") || t.Contains("shared\\")))) return "Layout"; // Changed Shared to Layout for NavMenu in .NET 8
-            if (t.Contains(".razor") || t.Contains("componente") || (t.Contains(" ui ") && !t.Contains("servicio")) || (t.Contains("interfaz") && !c.Contains(" public interface ") && !t.Contains("servicio"))) return "Components"; // Non-routable/shared UI components
-            if (t.Contains("interfaz") || t.Contains("interface") || c.Contains(" public interface ")) return "Interfaces"; // Or potentially Services/Interfaces or Models/Interfaces
+            if (t.Contains("servicio") || t.Contains("service") || t.Contains("email") || t.Contains("exportar") || t.Contains("login") || t.Contains("fachada") || t.Contains("manager") || t.Contains("helper") || t.Contains("client") || t.Contains("logic") || t.Contains("business")) return "Services";
+            if (c.Contains("@page ") || (t.Contains("página") && t.Contains(".razor"))) return "Pages";
+            if (t.Contains("layout") || (t.Contains(".razor") && (t.Contains("layout/") || t.Contains("layout\\")))) return "Layout";
+            if (t.Contains("navmenu") || (t.Contains(".razor") && (t.Contains("shared/") || t.Contains("shared\\")))) return "Layout";
+            if (t.Contains(".razor") || t.Contains("componente") || (t.Contains(" ui ") && !t.Contains("servicio")) || (t.Contains("interfaz") && !c.Contains(" public interface ") && !t.Contains("servicio"))) return "Components";
+            if (t.Contains("interfaz") || t.Contains("interface") || c.Contains(" public interface ")) return "Interfaces";
             if (t.Contains("modelo") || t.Contains("model") || t.Contains("entidad") || t.Contains("entity") || t.Contains("dto") || t.Contains("viewmodel") || c.Contains(" public class ") || c.Contains(" public record ") || c.Contains(" public struct ")) return "Models";
-            if (t.Contains("configuración") || t.Contains("appsettings") || t.Contains("startup") || t.Contains("program.cs")) return ""; // Root files
+            if (t.Contains("configuración") || t.Contains("appsettings") || t.Contains("startup") || t.Contains("program.cs")) return "";
 
             _logger.LogDebug("No se pudo inferir subcarpeta para tarea '{Tarea}'. Usando raíz.", tarea);
-            return ""; // Default to root if no specific folder inferred
+            return "";
         }
-
 
         private async Task GenerarCsprojAsync(string nombreProyecto, string rutaProyecto)
         {
@@ -1074,7 +1121,6 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
   <ItemGroup>
     <PackageReference Include=""Microsoft.AspNetCore.Components.Web"" Version=""8.0.0"" />
     <PackageReference Include=""Microsoft.EntityFrameworkCore.InMemory"" Version=""8.0.0"" />
-    
   </ItemGroup>
 </Project>";
              await File.WriteAllTextAsync(csprojPath, csprojContent);
@@ -1082,7 +1128,7 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
 
         private string SanitizeNamespace(string projectName)
         {
-             var sanitized = Regex.Replace(projectName, @"[^\w\.]", "_"); 
+             var sanitized = Regex.Replace(projectName, @"[^\w\.]", "_");
              if (string.IsNullOrWhiteSpace(sanitized) || (!char.IsLetter(sanitized[0]) && sanitized[0] != '_'))
              {
                   sanitized = "_" + sanitized;
@@ -1090,23 +1136,19 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
              sanitized = Regex.Replace(sanitized, @"\.{2,}", ".");
              sanitized = sanitized.Trim('.');
              sanitized = string.Join(".", sanitized.Split('.').Select(p => ToPascalCase(p)));
-
              return string.IsNullOrWhiteSpace(sanitized) ? "_GeneratedProject" : sanitized;
         }
 
         private string ToPascalCase(string input)
         {
-            if (string.IsNullOrEmpty(input)) return "_"; 
-
+            if (string.IsNullOrEmpty(input)) return "_";
             var parts = input.Split(new[] { '_', '-', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
             if (!parts.Any())
             {
                 var fallback = new string(input.Where(char.IsLetterOrDigit).ToArray());
-                if (string.IsNullOrEmpty(fallback)) return "_"; 
+                if (string.IsNullOrEmpty(fallback)) return "_";
                 parts = new[] { fallback };
             }
-
             var sb = new StringBuilder();
             foreach (var part in parts)
             {
@@ -1115,17 +1157,19 @@ RESTRICCIÓN ABSOLUTA: Devuelve ÚNICAMENTE el código fuente completo y correct
                     sb.Append(char.ToUpperInvariant(part[0]));
                     if (part.Length > 1)
                     {
-                        sb.Append(part.Substring(1).ToLowerInvariant()); 
+                        sb.Append(part.Substring(1).ToLowerInvariant());
                     }
                 }
             }
-
             var result = sb.ToString();
             if (string.IsNullOrEmpty(result)) return "_";
              if (char.IsDigit(result[0])) result = "_" + result;
-
             return result;
         }
         #endregion
     }
 }
+
+[end of Infraestructura/DesarrolladorAgent.cs]
+
+[end of Infraestructura/DesarrolladorAgent.cs]

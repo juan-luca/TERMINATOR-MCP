@@ -56,9 +56,9 @@ namespace Infraestructura
             foreach (var filePath in archivosConErrores) // filePath is the full path to the file with errors
             {
                 if (!IsPathPotentiallyValid(filePath)) { _logger.LogWarning("Omitiendo ruta de archivo inválida o sospechosa detectada: {File}", filePath); continue; }
-                
+
                 string codigoOriginal;
-                try 
+                try
                 {
                     codigoOriginal = await File.ReadAllTextAsync(filePath);
                 }
@@ -77,17 +77,16 @@ namespace Infraestructura
                     _logger.LogWarning("No se extrajeron mensajes de error específicos para el archivo {File}, aunque fue listado. Omitiendo.", filePath);
                     continue;
                 }
-                
+
                 string errorSnippetKey = string.Join(Environment.NewLine, errorMessagesParaArchivo);
-                if (_store.WasCorrected(filePath, errorSnippetKey)) 
-                { 
-                    _logger.LogInformation("⏭ Ya corregido antes (mismo snippet de errores): {File}", Path.GetFileName(filePath)); 
-                    continue; 
+                if (_store.WasCorrected(filePath, errorSnippetKey))
+                {
+                    _logger.LogInformation("⏭ Ya corregido antes (mismo snippet de errores): {File}", Path.GetFileName(filePath));
+                    continue;
                 }
 
                 _logger.LogInformation("🛠 Intentando corregir archivo: {File}", filePath);
-                // Passing null for projectContext as it's not readily available here without further refactoring.
-                var prompt = CrearPromptParaCorregirError(codigoOriginal, Path.GetFileName(filePath), errorMessagesParaArchivo, null); 
+                var prompt = CrearPromptParaCorregirError(codigoOriginal, Path.GetFileName(filePath), errorMessagesParaArchivo, null);
                 string codigoCorregido;
                 try
                 {
@@ -107,7 +106,7 @@ namespace Infraestructura
                     if (!IsPathWritable(filePath, rutaProyecto)) { _logger.LogError("❌ Permiso denegado o ruta inválida detectada ANTES de escribir corrección en: {File}. Omitiendo.", filePath); continue; }
                     _logger.LogDebug("Escribiendo corrección (Longitud: {Length}) en: {File}", codigoCorregido.Length, filePath);
                     await File.WriteAllTextAsync(filePath, codigoCorregido);
-                    _store.MarkCorrected(filePath, errorSnippetKey); 
+                    _store.MarkCorrected(filePath, errorSnippetKey);
                     corregidos.Add(filePath);
                     _logger.LogInformation("✅ Archivo corregido y escrito: {File}", Path.GetFileName(filePath));
                 }
@@ -122,13 +121,13 @@ namespace Infraestructura
         private List<string> InferirArchivosFallados(string errorLogContent, string projectRootPath)
         {
             var failedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var projectFileName = Path.GetFileName(projectRootPath); 
-            var projectFilePath = Path.Combine(projectRootPath, $"{projectFileName}.csproj"); 
-            if (!File.Exists(projectFilePath)) 
+            var projectFileName = Path.GetFileName(projectRootPath);
+            var projectFilePath = Path.Combine(projectRootPath, $"{projectFileName}.csproj");
+            if (!File.Exists(projectFilePath))
             {
                 string? parentDir = Path.GetDirectoryName(projectRootPath);
-                if(parentDir != null && Directory.Exists(parentDir)) projectRootPath = parentDir; 
-                 projectFilePath = Directory.GetFiles(projectRootPath, "*.csproj").FirstOrDefault() ?? projectFilePath; 
+                if(parentDir != null && Directory.Exists(parentDir)) projectRootPath = parentDir;
+                 projectFilePath = Directory.GetFiles(projectRootPath, "*.csproj").FirstOrDefault() ?? projectFilePath;
             }
 
             var fullProjectRootPath = Path.GetFullPath(projectRootPath);
@@ -158,7 +157,7 @@ namespace Infraestructura
                     }
 
                     if (!fullPath.StartsWith(fullProjectRootPath, StringComparison.OrdinalIgnoreCase) &&
-                        !fullPath.Equals(Path.GetFullPath(projectFilePath), StringComparison.OrdinalIgnoreCase)) 
+                        !fullPath.Equals(Path.GetFullPath(projectFilePath), StringComparison.OrdinalIgnoreCase))
                     {
                         _logger.LogDebug("Ignorando ruta resuelta fuera del proyecto: {FullPath} (Raíz: {ProjectRoot})", fullPath, fullProjectRootPath);
                         continue;
@@ -194,49 +193,51 @@ namespace Infraestructura
             return failedFiles.ToList();
         }
 
-        private string ExtraerErroresDelArchivo(string fullErrorLog, string targetFilePath) 
-        { 
+        private string ExtraerErroresDelArchivo(string fullErrorLog, string targetFilePath)
+        {
             string searchKey;
             string targetFileNameOnly = Path.GetFileName(targetFilePath);
 
-            if (targetFilePath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)) 
-            { 
-                searchKey = targetFileNameOnly; 
-            } 
-            else 
-            { 
-                try 
-                { 
-                    string? projectRootAttempt = Path.GetDirectoryName(targetFilePath);
-                    if (projectRootAttempt != null) projectRootAttempt = Path.GetDirectoryName(projectRootAttempt); 
-                    
-                    searchKey = Path.GetRelativePath(projectRootAttempt ?? targetFilePath, targetFilePath); 
-                    if (string.IsNullOrWhiteSpace(searchKey) || searchKey == "." || searchKey.Contains("..")) 
-                    { 
-                        searchKey = targetFileNameOnly; 
-                    }
-                } 
-                catch 
-                { 
-                    searchKey = targetFileNameOnly; 
-                } 
+            if (targetFilePath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
+            {
+                searchKey = targetFileNameOnly;
             }
-            
+            else
+            {
+                try
+                {
+                    string? projectRootAttempt = Path.GetDirectoryName(targetFilePath);
+                    if (projectRootAttempt != null) projectRootAttempt = Path.GetDirectoryName(projectRootAttempt);
+
+                    searchKey = Path.GetRelativePath(projectRootAttempt ?? targetFilePath, targetFilePath);
+                    if (string.IsNullOrWhiteSpace(searchKey) || searchKey == "." || searchKey.Contains(".."))
+                    {
+                        searchKey = targetFileNameOnly;
+                    }
+                }
+                catch
+                {
+                    searchKey = targetFileNameOnly;
+                }
+            }
+
             var relevantLines = fullErrorLog.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-                                .Where(line => line.IndexOf(searchKey, StringComparison.OrdinalIgnoreCase) >= 0 || 
-                                              (Regex.IsMatch(line, @"^\s*(error|warning)\s+\w+:") && 
-                                               !Regex.IsMatch(line, ErrorPathRegex.ToString() ) 
-                                              )
-                                      )
+                                .Where(line =>
+                                    line.IndexOf(searchKey, StringComparison.OrdinalIgnoreCase) >= 0 || // Line contains the file path/name
+                                    (targetFilePath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) && // OR it's a .csproj file
+                                     Regex.IsMatch(line, @"^\s*(error|warning)\s+\w+:") && // AND it's a generic error/warning line
+                                     !Regex.IsMatch(line, ErrorPathRegex.ToString()) // AND that line doesn't itself contain a different file path
+                                    )
+                                )
                                 .Take(MaxLinesPerFile)
-                                .ToList(); 
-            
-            if (relevantLines.Count == 0) 
-            { 
-                _logger.LogDebug("No se encontraron líneas específicas para '{SearchKey}' en el log. Tomando las primeras 10 líneas generales.", searchKey); 
-                relevantLines = fullErrorLog.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Take(10).ToList(); 
-            } 
-            return string.Join(Environment.NewLine, relevantLines); 
+                                .ToList();
+
+            if (relevantLines.Count == 0 && !targetFilePath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning("No se encontraron líneas de error específicas para el archivo '{SearchKey}' en el log, aunque el archivo fue identificado como contenedor de errores. Se enviará un conjunto de errores vacío para este archivo.", searchKey);
+                // relevantLines will remain empty.
+            }
+            return string.Join(Environment.NewLine, relevantLines);
         }
 
         private string CrearPromptParaCorregirError(string codigoOriginal, string nombreArchivo, List<string> errorMessages, string? projectContext)
@@ -253,12 +254,11 @@ namespace Infraestructura
             };
             string langHint = fileTypeExtension switch {
                 ".cs" => "csharp",
-                ".razor" => "razor", // or html, but razor is more specific
+                ".razor" => "razor",
                 ".csproj" => "xml",
-                ".cshtml" => "cshtml", // or html
+                ".cshtml" => "cshtml",
                 _ => "plaintext"
             };
-
 
             return @$"Eres un experto desarrollador C# y Blazor .NET. Tu tarea es corregir errores de compilación en el siguiente archivo.
 
@@ -277,28 +277,40 @@ Errores de Compilación Reportados (de ""dotnet build""):
 {errorBlock}
 
 Instrucciones PRECISAS para la Corrección:
-1.  Analiza CUIDADOSAMENTE los 'Errores de Compilación Reportados'.
+1.  Analiza CUIDADOSAMENTE los 'Errores de Compilación Reportados'. Intenta comprender la causa raíz del error, no solo el síntoma.
 2.  Modifica el 'Código Original con Errores' ÚNICAMENTE para solucionar estos errores específicos.
-3.  NO realices cambios no solicitados, NO agregues nuevas funcionalidades, y NO refactorices código que no esté directamente relacionado con los errores.
-4.  Presta atención a números de línea o detalles en los mensajes de error si están disponibles.
+3.  NO realices cambios no solicitados, NO agregues nuevas funcionalidades, y NO refactorices código que no esté directamente relacionado con los errores. El objetivo es una corrección quirúrgica.
+4.  Presta atención a números de línea o detalles en los mensajes de error si están disponibles y úsalos para localizar el problema.
 5.  Asegúrate de que la sintaxis sea correcta para C# y Blazor (.NET 8).
 6.  Devuelve el CÓDIGO FUENTE COMPLETO y CORREGIDO del archivo '{nombreArchivo}'.
 7.  NO incluyas explicaciones, introducciones, resúmenes de cambios, ni el código original sin modificar si no fue necesario.
 8.  NO uses bloques de markdown (```) adicionales alrededor del código final que devuelves. Solo el contenido puro del archivo corregido.
-9.  Si los errores indican un 'using' faltante, añádelo. Si indican un tipo o miembro no encontrado, verifica si es un error tipográfico o si realmente falta una definición que deberías poder inferir y añadir (de forma simple, no compleja).
-10. Si un error es ambiguo y no puedes corregirlo con alta confianza, intenta la corrección más probable o deja un comentario breve en el código (`// No se pudo corregir automáticamente: [descripción del problema]`) y devuelve el código con esa anotación. No dejes el archivo sin cambios si hay errores claros que sí puedes arreglar.
+9.  **Análisis Detallado del Error y Soluciones Comunes:**
+    *   Si el error indica un `using` faltante, añádelo en la sección correspondiente al inicio del archivo.
+    *   Si es un tipo o miembro no encontrado (ej. CS0246, CS0103, CS0117):
+        *   Verifica cuidadosamente errores tipográficos en el nombre del tipo/miembro.
+        *   Considera si es un miembro que falta y necesita una definición básica (ej. una propiedad `public string Nombre {{ get; set; }}` o un método `public void Metodo() {{ throw new NotImplementedException(); }}`), especialmente si la clase debe implementar una interfaz que lo requiere. No implementes lógica compleja dentro de estos stubs, solo lo mínimo para que compile.
+        *   Asegúrate que el namespace del tipo esté correctamente importado si el tipo existe en otro namespace del proyecto o una librería referenciada.
+    *   Para errores de conversión de tipos (ej. CS0029 ""No se puede convertir implícitamente el tipo X a Y""): Intenta una conversión explícita (ej. `(Y)miVariableX`) o usa métodos de parseo/conversión estándar (ej. `int.Parse(miString)`, `miObjeto.ToString()`) si el contexto es claro y la conversión es segura.
+    *   Para variables no asignadas (ej. CS0165 ""Uso de la variable local no asignada..."") o potenciales problemas de referencia nula con variables locales: Considera inicializarlas a un valor por defecto apropiado (ej. `string x = string.Empty;`, `List<MiTipo> items = new List<MiTipo>();`, `MiClase? obj = null;` si es anulable). Aplica esto con cautela.
+    *   Para problemas de scope (ej. CS0103 ""El nombre 'variable' no existe en el contexto actual""): Verifica si la variable fue definida en un scope diferente (ej. dentro de un `if` o `using` block) y si necesita ser declarada en un scope más amplio, o pasada como parámetro.
+10. **Resolución Cautelosa e Iterativa (Mentalmente):**
+    *   Si hay múltiples errores, mentalmente considera cómo la corrección de uno podría afectar a otros. El objetivo es una solución integral.
+    *   Aplica los cambios mínimos necesarios para corregir los errores reportados.
+    *   Si un error es ambiguo, o si la corrección podría tener efectos secundarios no deseados o requiere lógica compleja que no puedes inferir con seguridad, es PREFERIBLE dejar un comentario explicativo en el código (ej. `// ErrorFixer: No se pudo corregir automáticamente [descripción del problema]. Se necesita revisión humana.`) y DEVOLVER EL CÓDIGO CON ESE COMENTARIO en lugar de hacer un cambio arriesgado.
+    *   Si puedes corregir algunos errores pero otros son ambiguos, corrige los que puedas y comenta los demás.
 
 IMPORTANTE: El objetivo es que el archivo resultante compile correctamente.
 ";
         }
-        
-        private string LimpiarCodigoGemini(string codigo) 
-        { 
-            if (string.IsNullOrWhiteSpace(codigo)) return ""; 
-            var lines = codigo.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None).ToList(); 
-            if (lines.Any() && lines[0].Trim().StartsWith("```")) { lines.RemoveAt(0); } 
-            if (lines.Any() && lines.Last().Trim() == "```") { lines.RemoveAt(lines.Count - 1); } 
-            
+
+        private string LimpiarCodigoGemini(string codigo)
+        {
+            if (string.IsNullOrWhiteSpace(codigo)) return "";
+            var lines = codigo.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None).ToList();
+            if (lines.Any() && lines[0].Trim().StartsWith("```")) { lines.RemoveAt(0); }
+            if (lines.Any() && lines.Last().Trim() == "```") { lines.RemoveAt(lines.Count - 1); }
+
             string[] commonPhrases = {
                 "here's the code", "here is the code", "okay, here is the", "sure, here is the", "certainly, here is the",
                 "this is the code", "the code is as follows", "find the code below", "below is the code",
@@ -316,12 +328,12 @@ IMPORTANTE: El objetivo es que el archivo resultante compile correctamente.
                 bool removed = false;
                 foreach (var phrase in commonPhrases)
                 {
-                    if (trimmedLowerLine.StartsWith(phrase)) 
+                    if (trimmedLowerLine.StartsWith(phrase))
                     {
                         _logger.LogTrace("LimpiarCodigoGemini (ErrorFixer): Removiendo línea introductoria: '{Line}'", lines[0]);
                         lines.RemoveAt(0);
                         removed = true;
-                        break; 
+                        break;
                     }
                 }
                 if (!removed) break;
@@ -333,7 +345,7 @@ IMPORTANTE: El objetivo es que el archivo resultante compile correctamente.
                  bool removed = false;
                 foreach (var phrase in commonPhrases)
                 {
-                    if (trimmedLowerLine.EndsWith(phrase) || trimmedLowerLine == phrase) 
+                    if (trimmedLowerLine.EndsWith(phrase) || trimmedLowerLine == phrase)
                     {
                         _logger.LogTrace("LimpiarCodigoGemini (ErrorFixer): Removiendo línea conclusiva: '{Line}'", lines.Last());
                         lines.RemoveAt(lines.Count - 1);
@@ -343,15 +355,15 @@ IMPORTANTE: El objetivo es que el archivo resultante compile correctamente.
                 }
                  if (!removed) break;
             }
-            
+
             var processedLines = lines.Select(l => l.TrimEnd()).ToList();
-            while (processedLines.Any() && string.IsNullOrWhiteSpace(processedLines[0])) 
-            { 
-                processedLines.RemoveAt(0); 
+            while (processedLines.Any() && string.IsNullOrWhiteSpace(processedLines[0]))
+            {
+                processedLines.RemoveAt(0);
             }
-            while (processedLines.Any() && string.IsNullOrWhiteSpace(processedLines.Last())) 
-            { 
-                processedLines.RemoveAt(processedLines.Count - 1); 
+            while (processedLines.Any() && string.IsNullOrWhiteSpace(processedLines.Last()))
+            {
+                processedLines.RemoveAt(processedLines.Count - 1);
             }
 
             return string.Join(Environment.NewLine, processedLines).Trim();

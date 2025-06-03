@@ -25,6 +25,8 @@ namespace AgentWorker
         private readonly CorrectedErrorsStore _store;
         private readonly ICodeCompletenessCheckerAgent _completenessChecker; // Mantener inyectado
 
+    private const int MaxCorrectionCycles = 3;
+
         public Worker(
             ILogger<Worker> logger,
             IPromptStore promptStore,
@@ -113,23 +115,229 @@ namespace AgentWorker
                         // --- End Completeness Check ---
 
                         _logger.LogInformation("🏁 Fin de generación para '{Titulo}'. Iniciando compilación/corrección...", prompt.Titulo);
-                        await CorregirYRecompilarAsync(rutaProyecto);
+                        // await CorregirYRecompilarAsync(rutaProyecto); // Old call
+                        bool buildSuccess = await CorregirYRecompilarAsync(rutaProyecto);
+                        if (buildSuccess)
+                        {
+                            _logger.LogInformation("✅✅✅ PROYECTO FINAL COMPILADO EXITOSAMENTE para '{Titulo}' en '{RutaProyecto}'.", prompt.Titulo, rutaProyecto);
+                        }
+                        else
+                        {
+                            _logger.LogError("❌❌❌ FALLÓ LA COMPILACIÓN FINAL del proyecto para '{Titulo}' en '{RutaProyecto}' después de múltiples intentos.", prompt.Titulo, rutaProyecto);
+                        }
                     }
-                    else if (!seGeneroCodigo) { _logger.LogWarning("⚠️ No se generó código para '{Titulo}'. Omitiendo build.", prompt.Titulo); }
+                    else if (!seGeneroCodigo)
+                    {
+                        _logger.LogWarning("⚠️ No se generó código para '{Titulo}'. Omitiendo build.", prompt.Titulo);
+                    }
                 }
-                else { _logger.LogWarning("⚠️ Backlog vacío para '{Titulo}', no se generó código.", prompt.Titulo); }
+                else
+                {
+                    _logger.LogWarning("⚠️ Backlog vacío para '{Titulo}', no se generó código.", prompt.Titulo);
+                }
 
                 _logger.LogInformation("✅ Ciclo completado para prompt '{Titulo}'", prompt.Titulo);
             }
             _logger.LogInformation("🛑 Worker detenido.");
         }
 
-        // ... (SanitizeFileName, CorregirYRecompilarAsync, EjecutarBuildAsync, DeleteLogFile methods sin cambios) ...
-        #region Helper Methods (No changes needed here from previous version)
-        private static string SanitizeFileName(string input) { var sb = new StringBuilder(); bool lastWasHyphen = true; foreach (var c in input.Trim()) { if (char.IsLetterOrDigit(c) || c == '_') { sb.Append(c); lastWasHyphen = false; } else if (c == '-' || char.IsWhiteSpace(c)) { if (!lastWasHyphen) { sb.Append('-'); lastWasHyphen = true; } } } if (sb.Length > 0 && sb[^1] == '-') { sb.Length--; } var result = sb.ToString().ToLowerInvariant(); const int maxLength = 50; if (result.Length > maxLength) { result = result.Substring(0, maxLength).TrimEnd('-'); } return string.IsNullOrWhiteSpace(result) ? "proyecto-generado" : result; }
-        private async Task CorregirYRecompilarAsync(string rutaProyecto) { if (!Directory.Exists(rutaProyecto)) { _logger.LogWarning("📁 Carpeta '{Ruta}' no existe, no se puede compilar.", rutaProyecto); return; } var initialBuildLog = Path.Combine(rutaProyecto, "build_errors.log"); var postFixBuildLog = Path.Combine(rutaProyecto, "build_errors_after_fix.log"); _logger.LogInformation("🔨 Intentando compilación inicial en '{RutaProyecto}'…", rutaProyecto); if (await EjecutarBuildAsync(rutaProyecto, initialBuildLog)) { _logger.LogInformation("✅ Proyecto compiló sin errores tras generación/verificación."); DeleteLogFile(initialBuildLog); return; } _logger.LogWarning("⚠️ Compilación inicial fallida. Iniciando corrección automática (revisar '{Log}')...", initialBuildLog); List<string> archivosCorregidos = new List<string>(); try { archivosCorregidos = await _errorFixer.CorregirErroresDeCompilacionAsync(rutaProyecto); } catch (Exception ex) { _logger.LogError(ex, "❌ Error crítico durante la ejecución de ErrorFixer para {RutaProyecto}.", rutaProyecto); return; } if (archivosCorregidos.Count == 0) { _logger.LogError("❌ ErrorFixer no aplicó correcciones. La compilación falló y no se pudo corregir automáticamente. Revisa '{Log}'", initialBuildLog); return; } _logger.LogInformation("🔄 Se aplicaron correcciones a {Count} archivos. Reintentando compilación...", archivosCorregidos.Count); if (await EjecutarBuildAsync(rutaProyecto, postFixBuildLog)) { _logger.LogInformation("✅ Proyecto compiló correctamente tras la corrección automática."); foreach (var file in archivosCorregidos) { _store.Remove(file); } DeleteLogFile(initialBuildLog); DeleteLogFile(postFixBuildLog); } else { _logger.LogError("❌ La recompilación falló incluso después de aplicar correcciones automáticas. Revisa el log final: '{Log}'", postFixBuildLog); } }
-        private async Task<bool> EjecutarBuildAsync(string rutaProyecto, string logFilePath) { var psi = new ProcessStartInfo { FileName = "dotnet", Arguments = "build --nologo -v q", WorkingDirectory = rutaProyecto, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true, StandardOutputEncoding = Encoding.UTF8, StandardErrorEncoding = Encoding.UTF8 }; Process? process = null; try { process = new Process { StartInfo = psi, EnableRaisingEvents = true }; var outputBuilder = new StringBuilder(); var errorBuilder = new StringBuilder(); var processExitedTcs = new TaskCompletionSource<bool>(); process.OutputDataReceived += (sender, args) => { if (args.Data != null) outputBuilder.AppendLine(args.Data); }; process.ErrorDataReceived += (sender, args) => { if (args.Data != null) errorBuilder.AppendLine(args.Data); }; process.Exited += (sender, args) => { processExitedTcs.TrySetResult(true); }; process.Start(); process.BeginOutputReadLine(); process.BeginErrorReadLine(); var completedTask = await Task.WhenAny(processExitedTcs.Task, Task.Delay(TimeSpan.FromSeconds(60))); if (completedTask != processExitedTcs.Task || process.ExitCode != 0) { if (completedTask != processExitedTcs.Task) { _logger.LogError("⏰ Timeout esperando 'dotnet build' en {Ruta}. Forzando cierre.", rutaProyecto); try { process.Kill(entireProcessTree: true); } catch { /* Ignore */ } await File.WriteAllTextAsync(logFilePath, $"TIMEOUT (>60s) DURANTE LA COMPILACIÓN.{Environment.NewLine}Output parcial:{Environment.NewLine}{outputBuilder}{Environment.NewLine}Error parcial:{Environment.NewLine}{errorBuilder}"); return false; } string output = outputBuilder.ToString(); string error = errorBuilder.ToString(); string fullLog = $"--- Standard Output ---{Environment.NewLine}{output}{Environment.NewLine}--- Standard Error ---{Environment.NewLine}{error}{Environment.NewLine}Exit Code: {process.ExitCode}"; await File.WriteAllTextAsync(logFilePath, fullLog); _logger.LogDebug("Resultado de Build (ExitCode={ExitCode}) guardado en {LogPath}", process.ExitCode, logFilePath); return false; } else { string errorOutput = errorBuilder.ToString(); if (!string.IsNullOrWhiteSpace(errorOutput)) { _logger.LogDebug("Build exitoso pero con mensajes en Stderr (posibles warnings) en {RutaProyecto}:{NewLine}{ErrorOutput}", rutaProyecto, Environment.NewLine, errorOutput.Length > 500 ? errorOutput.Substring(0, 500) + "..." : errorOutput); } _logger.LogDebug("Build exitoso (ExitCode=0) en {RutaProyecto}.", rutaProyecto); DeleteLogFile(logFilePath); return true; } } catch (Exception ex) { _logger.LogError(ex, "❌ Excepción al ejecutar 'dotnet build' en {RutaProyecto}.", rutaProyecto); await File.WriteAllTextAsync(logFilePath, $"EXCEPCIÓN AL EJECUTAR DOTNET BUILD:{Environment.NewLine}{ex}"); return false; } finally { process?.Dispose(); } }
-        private void DeleteLogFile(string filePath) { if (File.Exists(filePath)) { try { File.Delete(filePath); _logger.LogDebug("Log file deleted: {FilePath}", filePath); } catch (IOException ex) { _logger.LogWarning(ex, "Could not delete log file: {FilePath}", filePath); } } }
+        #region Helper Methods
+        private static string SanitizeFileName(string input)
+        {
+            var sb = new StringBuilder();
+            bool lastWasHyphen = true;
+            foreach (var c in input.Trim())
+            {
+                if (char.IsLetterOrDigit(c) || c == '_')
+                {
+                    sb.Append(c);
+                    lastWasHyphen = false;
+                }
+                else if (c == '-' || char.IsWhiteSpace(c))
+                {
+                    if (!lastWasHyphen)
+                    {
+                        sb.Append('-');
+                        lastWasHyphen = true;
+                    }
+                }
+            }
+            if (sb.Length > 0 && sb[^1] == '-')
+            {
+                sb.Length--;
+            }
+            var result = sb.ToString().ToLowerInvariant();
+            const int maxLength = 50;
+            if (result.Length > maxLength)
+            {
+                result = result.Substring(0, maxLength).TrimEnd('-');
+            }
+            return string.IsNullOrWhiteSpace(result) ? "proyecto-generado" : result;
+        }
+
+        private async Task<bool> CorregirYRecompilarAsync(string rutaProyecto)
+        {
+            if (!Directory.Exists(rutaProyecto))
+            {
+                _logger.LogWarning("📁 Carpeta '{Ruta}' no existe, no se puede compilar.", rutaProyecto);
+                return false;
+            }
+
+            string initialBuildLogName = "build_errors.log"; // Base name for the first attempt
+            string postFixBuildLogPrefix = "build_errors_after_fix_attempt_"; // Prefix for subsequent attempts
+
+            for (int cycle = 1; cycle <= MaxCorrectionCycles; cycle++)
+            {
+                _logger.LogInformation("🔄 CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | Intentando compilación en '{RutaProyecto}'...", cycle, MaxCorrectionCycles, rutaProyecto);
+
+                // Determine current log path: initial log for cycle 1, prefixed for others.
+                string currentBuildLogPath = Path.Combine(rutaProyecto, cycle == 1 ? initialBuildLogName : $"{postFixBuildLogPrefix}{cycle -1}.log");
+                string previousBuildLogPath = Path.Combine(rutaProyecto, cycle == 1 ? initialBuildLogName : $"{postFixBuildLogPrefix}{cycle - 2}.log"); // For cleanup, if cycle > 1 and previous was a fix log
+
+                if (await EjecutarBuildAsync(rutaProyecto, currentBuildLogPath))
+                {
+                    _logger.LogInformation("✅ CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | Proyecto compiló sin errores.", cycle, MaxCorrectionCycles);
+                    DeleteLogFile(currentBuildLogPath);
+                    if (cycle > 1)
+                    {
+                        // Clean up the specific log from the previous failed attempt that led to this successful fix cycle
+                        DeleteLogFile(previousBuildLogPath);
+                        // Also clean up the very first build log if it exists and we are past cycle 1
+                        string veryFirstLog = Path.Combine(rutaProyecto, initialBuildLogName);
+                        if (File.Exists(veryFirstLog) && currentBuildLogPath != veryFirstLog) DeleteLogFile(veryFirstLog);
+                    }
+                    return true;
+                }
+
+                _logger.LogWarning("⚠️ CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | Compilación fallida. Revisar '{Log}'.", cycle, MaxCorrectionCycles, currentBuildLogPath);
+
+                if (cycle < MaxCorrectionCycles)
+                {
+                    _logger.LogInformation("🛠️ CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | Iniciando corrección automática...", cycle, MaxCorrectionCycles);
+                    List<string> archivosCorregidos;
+                    try
+                    {
+                        archivosCorregidos = await _errorFixer.CorregirErroresDeCompilacionAsync(rutaProyecto);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "❌ CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | Error crítico durante la ejecución de ErrorFixer para {RutaProyecto}.", cycle, MaxCorrectionCycles, rutaProyecto);
+                        return false;
+                    }
+
+                    if (archivosCorregidos.Count == 0)
+                    {
+                        _logger.LogWarning("🚫 CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | ErrorFixer no aplicó correcciones. La compilación falló y no se pudo corregir. Abortando más intentos.", cycle, MaxCorrectionCycles);
+                        return false;
+                    }
+                    _logger.LogInformation("🔄 CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | Se aplicaron correcciones a {Count} archivos. Se reintentará la compilación.", cycle, MaxCorrectionCycles, archivosCorregidos.Count);
+                    // Loop continues to next build attempt, log for that attempt will be named with postFixBuildLogPrefix{cycle}.log
+                }
+                else
+                {
+                    _logger.LogError("❌ CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | La compilación final falló después de todos los intentos. Revisar: '{Log}'", cycle, MaxCorrectionCycles, currentBuildLogPath);
+                    return false;
+                }
+            }
+            _logger.LogWarning("🏁 CICLO DE CORRECCIÓN | Se alcanzó el final inesperado del bucle CorregirYRecompilarAsync. Asumiendo fallo.");
+            return false;
+        }
+
+        private async Task<bool> EjecutarBuildAsync(string rutaProyecto, string logFilePath)
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = "build --nologo -v q", // -v q for quiet, shows only errors/warnings
+                WorkingDirectory = rutaProyecto,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8
+            };
+
+            Process? process = null;
+            try
+            {
+                process = new Process { StartInfo = psi, EnableRaisingEvents = true };
+                var outputBuilder = new StringBuilder();
+                var errorBuilder = new StringBuilder();
+                var processExitedTcs = new TaskCompletionSource<bool>();
+
+                process.OutputDataReceived += (sender, args) => { if (args.Data != null) outputBuilder.AppendLine(args.Data); };
+                process.ErrorDataReceived += (sender, args) => { if (args.Data != null) errorBuilder.AppendLine(args.Data); };
+                process.Exited += (sender, args) => { processExitedTcs.TrySetResult(true); };
+
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                var completedTask = await Task.WhenAny(processExitedTcs.Task, Task.Delay(TimeSpan.FromSeconds(60)));
+
+                if (completedTask != processExitedTcs.Task || (process != null && process.ExitCode != 0))
+                {
+                    if (completedTask != processExitedTcs.Task)
+                    {
+                        _logger.LogError("⏰ Timeout esperando 'dotnet build' en {Ruta}. Forzando cierre.", rutaProyecto);
+                        try { if(process !=null && !process.HasExited) process.Kill(entireProcessTree: true); } catch { /* Ignore */ }
+                        await File.WriteAllTextAsync(logFilePath, $"TIMEOUT (>60s) DURANTE LA COMPILACIÓN.{Environment.NewLine}Output parcial:{Environment.NewLine}{outputBuilder}{Environment.NewLine}Error parcial:{Environment.NewLine}{errorBuilder}");
+                        return false;
+                    }
+
+                    string output = outputBuilder.ToString();
+                    string error = errorBuilder.ToString();
+                    // Combine stdout and stderr for the log file, as warnings might go to stdout with -v q
+                    string fullLog = $"--- Standard Output (dotnet build -v q) ---{Environment.NewLine}{output}{Environment.NewLine}--- Standard Error (dotnet build -v q) ---{Environment.NewLine}{error}{Environment.NewLine}Exit Code: {process?.ExitCode ?? -1}";
+                    await File.WriteAllTextAsync(logFilePath, fullLog);
+                    _logger.LogDebug("Resultado de Build (ExitCode={ExitCode}) guardado en {LogPath}", process?.ExitCode ?? -1, logFilePath);
+                    return false; // Build failed
+                }
+                else
+                {
+                    // Build succeeded, ExitCode is 0
+                    string errorOutput = errorBuilder.ToString(); // Stderr might still contain warnings or other info
+                    string stdOutput = outputBuilder.ToString();  // Stdout might also contain warnings with -v q
+                    if (!string.IsNullOrWhiteSpace(stdOutput) || !string.IsNullOrWhiteSpace(errorOutput))
+                    {
+                       _logger.LogDebug("Build en {RutaProyecto} exitoso (ExitCode=0), pero con output/stderr (posibles warnings). Stdout: {OutputLength} chars, Stderr: {ErrorLength} chars. Ver log si se generó (se borra en éxito).",
+                                        rutaProyecto, stdOutput.Length, errorOutput.Length);
+                    }
+                    else
+                    {
+                        _logger.LogDebug("Build exitoso (ExitCode=0) en {RutaProyecto} sin output/error adicional.", rutaProyecto);
+                    }
+                    DeleteLogFile(logFilePath); // Clean up log on success
+                    return true; // Build succeeded
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Excepción al ejecutar 'dotnet build' en {RutaProyecto}.", rutaProyecto);
+                await File.WriteAllTextAsync(logFilePath, $"EXCEPCIÓN AL EJECUTAR DOTNET BUILD:{Environment.NewLine}{ex}");
+                return false;
+            }
+            finally
+            {
+                process?.Dispose();
+            }
+        }
+        private void DeleteLogFile(string filePath)
+        {
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    File.Delete(filePath);
+                    _logger.LogDebug("🗑️ Archivo de log eliminado: {FilePath}", filePath);
+                }
+                catch (IOException ex)
+                {
+                    _logger.LogWarning(ex, "⚠️ No se pudo eliminar el archivo de log: {FilePath}", filePath);
+                }
+            }
+        }
         #endregion
     }
 }
