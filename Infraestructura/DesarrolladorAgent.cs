@@ -144,26 +144,49 @@ namespace Infraestructura
                 }
 
                 string promptParaGemini = CrearPromptParaTarea(prompt, tarea, tipoCodigo, rutaProyecto, targetRelativePath);
-                _logger.LogDebug("🔄 Llamando Gemini CREACIÓN...");
-                try
+                _logger.LogDebug("🔄 Llamando Gemini CREACIÓN (Potencialmente hasta 2 intentos) para '{File}'...", nombreArchivo);
+
+                for (int attempt = 1; attempt <= 2; attempt++)
                 {
-                     rawCodigoGenerado = await _gemini.GenerarAsync(promptParaGemini);
-                     codigoGenerado = LimpiarCodigoGemini(rawCodigoGenerado);
-                }
-                catch (Exception ex) when (ex.Message.Contains("503"))
-                {
-                     _logger.LogWarning(ex, "⚠️ Error 503 Gemini CREACIÓN '{File}'. Omitido.", nombreArchivo);
-                     return;
-                }
-                catch (Exception ex)
-                {
-                     _logger.LogError(ex, "❌ Error Gemini CREACIÓN '{File}'.", nombreArchivo);
-                     return;
+                    try
+                    {
+                        _logger.LogInformation("Intento {Attempt}/2 para generar '{File}'...", attempt, nombreArchivo);
+                        rawCodigoGenerado = await _gemini.GenerarAsync(promptParaGemini);
+                        codigoGenerado = LimpiarCodigoGemini(rawCodigoGenerado);
+                    }
+                    catch (Exception ex) when (ex.Message.Contains("503"))
+                    {
+                        _logger.LogWarning(ex, "⚠️ Error 503 Gemini CREACIÓN '{File}', Intento {Attempt}. Omitido.", nombreArchivo, attempt);
+                        return; // Exit if 503
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "❌ Error Gemini CREACIÓN '{File}', Intento {Attempt}.", nombreArchivo, attempt);
+                        return; // Exit on other Gemini errors
+                    }
+
+                    if (EsCodigoPlausible(codigoGenerado, nombreArchivo, tipoCodigo))
+                    {
+                        _logger.LogInformation("✅ Código generado para '{File}' pasó la plausibilidad en el intento {Attempt}.", nombreArchivo, attempt);
+                        break; // Success, exit loop and proceed to write
+                    }
+                    else
+                    {
+                        _logger.LogWarning("⚠️ Código generado CREACIÓN '{File}' NO PLAUSIBLE o vacío en el intento {Attempt}. Primeras 500 chars del contenido problemático:\n{CodigoProblematico}",
+                            nombreArchivo, attempt, string.IsNullOrEmpty(codigoGenerado) ? "[VACIO]" : codigoGenerado.Substring(0, Math.Min(500, codigoGenerado.Length)));
+                        if (attempt == 2) // Max attempts reached
+                        {
+                            _logger.LogError("❌ Fallaron ambos intentos de generar código plausible para '{File}'. Omitiendo archivo.", nombreArchivo);
+                            return; // Exit method after final failed attempt
+                        }
+                        _logger.LogInformation("Retrying code generation for '{File}' (Intento {NextAttempt}).", nombreArchivo, attempt + 1);
+                        await Task.Delay(500); // Optional short delay before retrying
+                    }
                 }
 
-                if (!EsCodigoPlausible(codigoGenerado, nombreArchivo, tipoCodigo))
+                if (string.IsNullOrWhiteSpace(codigoGenerado) || !EsCodigoPlausible(codigoGenerado, nombreArchivo, tipoCodigo))
                 {
-                    _logger.LogWarning("⚠️ Código generado CREACIÓN '{File}' NO PLAUSIBLE o vacío. Omitido. Primeras 500 chars del contenido problemático:\n{CodigoProblematico}", nombreArchivo, string.IsNullOrEmpty(codigoGenerado) ? "[VACIO]" : codigoGenerado.Substring(0, Math.Min(500, codigoGenerado.Length)));
+                    _logger.LogWarning("⚠️ Código para '{File}' es vacío o no plausible después del bucle de reintento. No se escribirá el archivo.", nombreArchivo);
                     return;
                 }
 
