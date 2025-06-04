@@ -1,78 +1,34 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.EntityFrameworkCore;
+using AppBasicaCRUD.Data;
 
-namespace AppBasicaCRUD
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddRazorPages();
+builder.Services.AddServerSideBlazor();
+
+// Configurar ApplicationDbContext con base de datos en memoria
+builder.Services.AddDbContext<ApplicationDbContext>(opt => opt.UseInMemoryDatabase("ProductosDb"));
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
 {
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            List<string> nombres = new List<string>();
-
-            while (true)
-            {
-                Console.WriteLine("Opciones:");
-                Console.WriteLine("1. Agregar nombre");
-                Console.WriteLine("2. Mostrar nombres");
-                Console.WriteLine("3. Eliminar nombre");
-                Console.WriteLine("4. Salir");
-
-                Console.Write("Seleccione una opción: ");
-                string opcion = Console.ReadLine();
-
-                switch (opcion)
-                {
-                    case "1":
-                        Console.Write("Ingrese el nombre a agregar: ");
-                        string nuevoNombre = Console.ReadLine();
-                        nombres.Add(nuevoNombre);
-                        Console.WriteLine("Nombre agregado.");
-                        break;
-                    case "2":
-                        if (nombres.Count == 0)
-                        {
-                            Console.WriteLine("No hay nombres para mostrar.");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Lista de nombres:");
-                            foreach (string nombre in nombres)
-                            {
-                                Console.WriteLine(nombre);
-                            }
-                        }
-                        break;
-                    case "3":
-                        if (nombres.Count == 0)
-                        {
-                            Console.WriteLine("No hay nombres para eliminar.");
-                        }
-                        else
-                        {
-                            Console.Write("Ingrese el nombre a eliminar: ");
-                            string nombreAEliminar = Console.ReadLine();
-                            if (nombres.Contains(nombreAEliminar))
-                            {
-                                nombres.Remove(nombreAEliminar);
-                                Console.WriteLine("Nombre eliminado.");
-                            }
-                            else
-                            {
-                                Console.WriteLine("El nombre no se encuentra en la lista.");
-                            }
-                        }
-                        break;
-                    case "4":
-                        Console.WriteLine("Saliendo...");
-                        return;
-                    default:
-                        Console.WriteLine("Opción inválida.");
-                        break;
-                }
-
-                Console.WriteLine();
-            }
-        }
-    }
+    app.UseExceptionHandler("/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
+
+app.UseHttpsRedirection();
+
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.MapBlazorHub();
+app.MapFallbackToPage("/_Host");
+
+app.Run();
