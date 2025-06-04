@@ -371,7 +371,6 @@ IMPORTANTE: El objetivo es que el archivo resultante compile correctamente.
         private bool IsPathPotentiallyValid(string? filePath) { return !string.IsNullOrWhiteSpace(filePath); }
         private bool IsPathWritable(string filePath, string projectRootPath) { if (!IsPathPotentiallyValid(filePath)) return false; try { string fullPath = Path.GetFullPath(filePath); string fullProjectRootPath = Path.GetFullPath(projectRootPath); if (!fullPath.StartsWith(fullProjectRootPath, StringComparison.OrdinalIgnoreCase)) { _logger.LogWarning("Attempted to write outside project directory: {FullPath}", fullPath); return false; } string[] protectedPaths = { Path.Combine("C:", "Program Files"), Path.Combine("C:", "Program Files (x86)"), Path.Combine("C:", "Windows"), "/usr/bin", "/usr/sbin", "/bin", "/sbin", "/etc", Path.Combine("dotnet", "sdk") }; if (protectedPaths.Any(p => fullPath.Contains(p, StringComparison.OrdinalIgnoreCase))) { _logger.LogWarning("Attempted to write to a potentially protected system path: {FullPath}", fullPath); return false; } string? directory = Path.GetDirectoryName(fullPath); if (directory == null || !Directory.Exists(directory)) { _logger.LogWarning("Target directory for writing does not exist: {Directory}", directory ?? "N/A"); return false; } return true; } catch (Exception ex) { _logger.LogWarning(ex, "Exception while checking if path is writable: {FilePath}", filePath); return false; } }
 
-        #endregion
 
     }
 }
