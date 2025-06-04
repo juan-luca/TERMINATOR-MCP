@@ -1,0 +1,21 @@
+name: .NET Build
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '9.0.x'
+    - name: Restore
+      run: dotnet restore DesarrolladorAutonomo.sln
+    - name: Build
+      run: dotnet build DesarrolladorAutonomo.sln --no-restore --configuration Release
