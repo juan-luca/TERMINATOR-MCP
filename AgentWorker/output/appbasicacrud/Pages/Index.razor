@@ -1,9 +1,56 @@
-@page "/"
+@page "/productos"
 @using AppBasicaCRUD.Data
+@using AppBasicaCRUD.Models
+@using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext dbContext
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Productos</PageTitle>
 
-<h1>Hello, world!</h1>
+<h3>Listado de Productos</h3>
 
-Welcome to your new app.
+<p>
+    <a href="/create" class="btn btn-primary">Crear nuevo</a>
+</p>
+
+@if (productos == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (!productos.Any())
+{
+    <p>No hay productos.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in productos)
+        {
+            <tr>
+                <td>@item.Nombre</td>
+                <td>@item.Precio</td>
+                <td>
+                    <a class="btn btn-sm btn-secondary" href="/edit/@item.Id">Editar</a>
+                    <a class="btn btn-sm btn-danger" href="/delete/@item.Id">Eliminar</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Producto>? productos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await dbContext.Productos.ToListAsync();
+    }
+}
