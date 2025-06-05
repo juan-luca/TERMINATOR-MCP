@@ -31,6 +31,12 @@ To run the background worker instead:
 dotnet run --project AgentWorker
 ```
 
+By default the worker will attempt to build and automatically fix the generated
+project up to three times. You can adjust this behaviour in `AgentWorker/appsettings.json`
+under the `Worker:MaxCorrectionCycles` setting or via the `Worker__MaxCorrectionCycles`
+environment variable. Using a value of `0` (or any negative number) means the
+worker will continue correcting until the build succeeds.
+
 ## Running tests
 
 Execute the unit tests with:
