@@ -2,158 +2,28 @@
 
 ## Developer Agent
 
-Below is a list of 100 potential improvements for the developer agent.
-- Improvement 1
-- Improvement 2
-- Improvement 3
-- Improvement 4
-- Improvement 5
-- Improvement 6
-- Improvement 7
-- Improvement 8
-- Improvement 9
-- Improvement 10
-- Improvement 11
-- Improvement 12
-- Improvement 13
-- Improvement 14
-- Improvement 15
-- Improvement 16
-- Improvement 17
-- Improvement 18
-- Improvement 19
-- Improvement 20
-- Improvement 21
-- Improvement 22
-- Improvement 23
-- Improvement 24
-- Improvement 25
-- Improvement 26
-- Improvement 27
-- Improvement 28
-- Improvement 29
-- Improvement 30
-- Improvement 31
-- Improvement 32
-- Improvement 33
-- Improvement 34
-- Improvement 35
-- Improvement 36
-- Improvement 37
-- Improvement 38
-- Improvement 39
-- Improvement 40
-- Improvement 41
-- Improvement 42
-- Improvement 43
-- Improvement 44
-- Improvement 45
-- Improvement 46
-- Improvement 47
-- Improvement 48
-- Improvement 49
-- Improvement 50
-- Improvement 51
-- Improvement 52
-- Improvement 53
-- Improvement 54
-- Improvement 55
-- Improvement 56
-- Improvement 57
-- Improvement 58
-- Improvement 59
-- Improvement 60
-- Improvement 61
-- Improvement 62
-- Improvement 63
-- Improvement 64
-- Improvement 65
-- Improvement 66
-- Improvement 67
-- Improvement 68
-- Improvement 69
-- Improvement 70
-- Improvement 71
-- Improvement 72
-- Improvement 73
-- Improvement 74
-- Improvement 75
-- Improvement 76
-- Improvement 77
-- Improvement 78
-- Improvement 79
-- Improvement 80
-- Improvement 81
-- Improvement 82
-- Improvement 83
-- Improvement 84
-- Improvement 85
-- Improvement 86
-- Improvement 87
-- Improvement 88
-- Improvement 89
-- Improvement 90
-- Improvement 91
-- Improvement 92
-- Improvement 93
-- Improvement 94
-- Improvement 95
-- Improvement 96
-- Improvement 97
-- Improvement 98
-- Improvement 99
-- Improvement 100
+Below are some recommended improvements for the developer agent.
 
+- Validate that generated projects build successfully before returning results
+- Limit code generation to referenced namespaces and packages
+- Normalize file paths to prevent invalid names
+- Use asynchronous I/O when writing files
+- Log a summary of tasks processed by the worker
+- Support environment-based configuration for API keys
+- Provide option to run dotnet format after code generation
+- Add progress output for long-running tasks
+- Generate unit test stubs for new classes
+- Automatically clean temporary directories before start
 ## Error Fixer
 
-The following list includes 50 potential improvements for the error fixer component.
-- Improvement 1
-- Improvement 2
-- Improvement 3
-- Improvement 4
-- Improvement 5
-- Improvement 6
-- Improvement 7
-- Improvement 8
-- Improvement 9
-- Improvement 10
-- Improvement 11
-- Improvement 12
-- Improvement 13
-- Improvement 14
-- Improvement 15
-- Improvement 16
-- Improvement 17
-- Improvement 18
-- Improvement 19
-- Improvement 20
-- Improvement 21
-- Improvement 22
-- Improvement 23
-- Improvement 24
-- Improvement 25
-- Improvement 26
-- Improvement 27
-- Improvement 28
-- Improvement 29
-- Improvement 30
-- Improvement 31
-- Improvement 32
-- Improvement 33
-- Improvement 34
-- Improvement 35
-- Improvement 36
-- Improvement 37
-- Improvement 38
-- Improvement 39
-- Improvement 40
-- Improvement 41
-- Improvement 42
-- Improvement 43
-- Improvement 44
-- Improvement 45
-- Improvement 46
-- Improvement 47
-- Improvement 48
-- Improvement 49
-- Improvement 50
+Below are some recommended improvements for the error fixer component.
+- Parse compiler output to highlight missing dependencies
+- Suggest common fixes for CS and MSB errors
+- Remove invalid using directives and add required ones
+- Run dotnet build with detailed verbosity for troubleshooting
+- Apply code formatting to reduce style-related warnings
+- Provide a summary of changes after each fix attempt
+- Stop after a configurable number of unsuccessful iterations
+- Allow custom scripts to be executed before and after fixing
+- Record build logs for each attempt
+- Fallback to generating a minimal example when errors persist

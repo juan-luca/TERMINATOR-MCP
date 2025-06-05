@@ -9,6 +9,17 @@ export DOTNET_ROOT=$HOME/dotnet
 export PATH=$DOTNET_ROOT:$PATH
 ```
 
+## Documentation
+
+See the following guides inside the `docs` directory:
+
+- [Project Overview](docs/overview.md)
+- [Architecture](docs/architecture.md)
+- [Setup Guide](docs/setup.md)
+- [Usage](docs/usage.md)
+- [Configuration](docs/configuration.md)
+- [Troubleshooting](docs/troubleshooting.md)
+
 Then build the solution:
 
 ```bash
@@ -30,6 +41,12 @@ To run the background worker instead:
 ```bash
 dotnet run --project AgentWorker
 ```
+
+By default the worker will attempt to build and automatically fix the generated
+project up to three times. You can adjust this behaviour in `AgentWorker/appsettings.json`
+under the `Worker:MaxCorrectionCycles` setting or via the `Worker__MaxCorrectionCycles`
+environment variable. Using a value of `0` (or any negative number) means the
+worker will continue correcting until the build succeeds.
 
 ## Running tests
 
