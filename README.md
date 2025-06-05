@@ -15,12 +15,9 @@ Then build the solution:
 dotnet build DesarrolladorAutonomo.sln
 ```
 
-Before running any component you must provide a Gemini API key using an
-environment variable. The configuration system looks for `GEMINI__APIKEY`:
-
-```bash
-export GEMINI__APIKEY="<your-gemini-key>"
-```
+The Gemini configuration is bundled with the repository. A default API key
+is already included in the `appsettings.json` files, so no environment
+variables are required for a basic run.
 
 Then run the API:
 
