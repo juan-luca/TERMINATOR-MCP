@@ -27,7 +27,7 @@ namespace AgentWorker
         private readonly ICodeCompletenessCheckerAgent _completenessChecker; // Mantener inyectado
         private readonly ExecutionMemoryStore _memory;
 
-    private const int MaxCorrectionCycles = 3;
+        private readonly int _maxCorrectionCycles;
 
         public Worker(
             ILogger<Worker> logger,
@@ -201,9 +201,9 @@ namespace AgentWorker
             string initialBuildLogName = "build_errors.log"; // Base name for the first attempt
             string postFixBuildLogPrefix = "build_errors_after_fix_attempt_"; // Prefix for subsequent attempts
 
-            for (int cycle = 1; cycle <= MaxCorrectionCycles; cycle++)
+            for (int cycle = 1; _maxCorrectionCycles < 1 || cycle <= _maxCorrectionCycles; cycle++)
             {
-                _logger.LogInformation("🔄 CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | Intentando compilación en '{RutaProyecto}'...", cycle, MaxCorrectionCycles, rutaProyecto);
+                _logger.LogInformation("🔄 CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | Intentando compilación en '{RutaProyecto}'...", cycle, _maxCorrectionCycles, rutaProyecto);
 
                 // Determine current log path: initial log for cycle 1, prefixed for others.
                 string currentBuildLogPath = Path.Combine(rutaProyecto, cycle == 1 ? initialBuildLogName : $"{postFixBuildLogPrefix}{cycle -1}.log");
@@ -211,7 +211,7 @@ namespace AgentWorker
 
                 if (await EjecutarBuildAsync(rutaProyecto, currentBuildLogPath))
                 {
-                    _logger.LogInformation("✅ CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | Proyecto compiló sin errores.", cycle, MaxCorrectionCycles);
+                    _logger.LogInformation("✅ CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | Proyecto compiló sin errores.", cycle, _maxCorrectionCycles);
                     DeleteLogFile(currentBuildLogPath);
                     if (cycle > 1)
                     {
@@ -224,11 +224,11 @@ namespace AgentWorker
                     return true;
                 }
 
-                _logger.LogWarning("⚠️ CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | Compilación fallida. Revisar '{Log}'.", cycle, MaxCorrectionCycles, currentBuildLogPath);
+                _logger.LogWarning("⚠️ CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | Compilación fallida. Revisar '{Log}'.", cycle, _maxCorrectionCycles, currentBuildLogPath);
 
-                if (cycle < MaxCorrectionCycles)
+                if (_maxCorrectionCycles < 1 || cycle < _maxCorrectionCycles)
                 {
-                    _logger.LogInformation("🛠️ CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | Iniciando corrección automática...", cycle, MaxCorrectionCycles);
+                        _logger.LogInformation("🛠️ CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | Iniciando corrección automática...", cycle, _maxCorrectionCycles);
                     List<string> archivosCorregidos;
                     try
                     {
@@ -236,21 +236,21 @@ namespace AgentWorker
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "❌ CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | Error crítico durante la ejecución de ErrorFixer para {RutaProyecto}.", cycle, MaxCorrectionCycles, rutaProyecto);
+                        _logger.LogError(ex, "❌ CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | Error crítico durante la ejecución de ErrorFixer para {RutaProyecto}.", cycle, _maxCorrectionCycles, rutaProyecto);
                         return false;
                     }
 
                     if (archivosCorregidos.Count == 0)
                     {
-                        _logger.LogWarning("🚫 CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | ErrorFixer no aplicó correcciones. La compilación falló y no se pudo corregir. Abortando más intentos.", cycle, MaxCorrectionCycles);
+                        _logger.LogWarning("🚫 CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | ErrorFixer no aplicó correcciones. La compilación falló y no se pudo corregir. Abortando más intentos.", cycle, _maxCorrectionCycles);
                         return false;
                     }
-                    _logger.LogInformation("🔄 CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | Se aplicaron correcciones a {Count} archivos. Se reintentará la compilación.", cycle, MaxCorrectionCycles, archivosCorregidos.Count);
+                    _logger.LogInformation("🔄 CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | Se aplicaron correcciones a {Count} archivos. Se reintentará la compilación.", cycle, _maxCorrectionCycles, archivosCorregidos.Count);
                     // Loop continues to next build attempt, log for that attempt will be named with postFixBuildLogPrefix{cycle}.log
                 }
                 else
                 {
-                    _logger.LogError("❌ CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | La compilación final falló después de todos los intentos. Revisar: '{Log}'", cycle, MaxCorrectionCycles, currentBuildLogPath);
+                    _logger.LogError("❌ CICLO DE CORRECCIÓN {Cycle}/{MaxCycles} | La compilación final falló después de todos los intentos. Revisar: '{Log}'", cycle, _maxCorrectionCycles, currentBuildLogPath);
                     return false;
                 }
             }

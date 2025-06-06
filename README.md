@@ -9,6 +9,17 @@ export DOTNET_ROOT=$HOME/dotnet
 export PATH=$DOTNET_ROOT:$PATH
 ```
 
+## Documentation
+
+See the following guides inside the `docs` directory:
+
+- [Project Overview](docs/overview.md)
+- [Architecture](docs/architecture.md)
+- [Setup Guide](docs/setup.md)
+- [Usage](docs/usage.md)
+- [Configuration](docs/configuration.md)
+- [Troubleshooting](docs/troubleshooting.md)
+
 Then build the solution:
 
 ```bash
