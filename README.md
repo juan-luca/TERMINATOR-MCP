@@ -15,29 +15,3 @@ Then build the solution:
 dotnet build DesarrolladorAutonomo.sln
 ```
 
-Before running any component you must provide a Gemini API key using an
-environment variable. The configuration system looks for `GEMINI__APIKEY`:
-
-```bash
-export GEMINI__APIKEY="<your-gemini-key>"
-```
-
-Then run the API:
-
-```bash
-dotnet run --project AgentAPI
-```
-
-To run the background worker instead:
-
-```bash
-dotnet run --project AgentWorker
-```
-
-## Running tests
-
-Execute the unit tests with:
-
-```bash
-dotnet test DesarrolladorAutonomo.sln
-```

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Shared; // <--- Asegurar que Shared esté referenciado
 using Infraestructura;
+using Infraestructura.Memory;
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,7 @@ namespace AgentWorker
         private readonly IErrorFixer _errorFixer;
         private readonly CorrectedErrorsStore _store;
         private readonly ICodeCompletenessCheckerAgent _completenessChecker; // Mantener inyectado
+        private readonly ExecutionMemoryStore _memory;
 
     private const int MaxCorrectionCycles = 3;
 
@@ -34,7 +36,8 @@ namespace AgentWorker
             IDesarrolladorAgent desarrollador,
             IErrorFixer errorFixer,
             CorrectedErrorsStore store,
-            ICodeCompletenessCheckerAgent completenessChecker)
+            ICodeCompletenessCheckerAgent completenessChecker,
+            ExecutionMemoryStore memory)
         {
             _logger = logger;
             _promptStore = promptStore;
@@ -43,6 +46,7 @@ namespace AgentWorker
             _errorFixer = errorFixer;
             _store = store;
             _completenessChecker = completenessChecker;
+            _memory = memory;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -86,6 +90,7 @@ namespace AgentWorker
 
 
                 bool seGeneroCodigo = false;
+                bool buildSuccess = false;
                 if (backlog.Length > 0)
                 {
                     foreach (var tarea in backlog)
@@ -116,7 +121,7 @@ namespace AgentWorker
 
                         _logger.LogInformation("🏁 Fin de generación para '{Titulo}'. Iniciando compilación/corrección...", prompt.Titulo);
                         // await CorregirYRecompilarAsync(rutaProyecto); // Old call
-                        bool buildSuccess = await CorregirYRecompilarAsync(rutaProyecto);
+                        buildSuccess = await CorregirYRecompilarAsync(rutaProyecto);
                         if (buildSuccess)
                         {
                             _logger.LogInformation("✅✅✅ PROYECTO FINAL COMPILADO EXITOSAMENTE para '{Titulo}' en '{RutaProyecto}'.", prompt.Titulo, rutaProyecto);
@@ -137,6 +142,16 @@ namespace AgentWorker
                 }
 
                 _logger.LogInformation("✅ Ciclo completado para prompt '{Titulo}'", prompt.Titulo);
+
+                _memory.Add(new ExecutionMemoryEntry
+                {
+                    TimestampUtc = DateTime.UtcNow,
+                    Prompt = prompt,
+                    Backlog = backlog,
+                    BuildSuccess = buildSuccess,
+                    ProjectPath = rutaProyecto,
+                    CommitHash = GetCurrentCommitHash()
+                });
             }
             _logger.LogInformation("🛑 Worker detenido.");
         }
@@ -336,6 +351,32 @@ namespace AgentWorker
                 {
                     _logger.LogWarning(ex, "⚠️ No se pudo eliminar el archivo de log: {FilePath}", filePath);
                 }
+            }
+        }
+
+        private static string GetCurrentCommitHash()
+        {
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "git",
+                    Arguments = "rev-parse HEAD",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using var process = Process.Start(psi);
+                if (process == null)
+                    return string.Empty;
+                string output = process.StandardOutput.ReadLine() ?? string.Empty;
+                process.WaitForExit(3000);
+                return output.Trim();
+            }
+            catch
+            {
+                return string.Empty;
             }
         }
         #endregion
