@@ -2,6 +2,7 @@
 
 using AgentWorker;
 using Infraestructura;
+using Infraestructura.Memory;
 using Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -30,6 +31,7 @@ builder.Services.AddSingleton<IPromptStore, PromptStoreArchivo>();
 builder.Services.AddSingleton<GeminiClient>();
 builder.Services.AddSingleton<CorrectedErrorsStore>();
 builder.Services.AddSingleton<IErrorFixer, ErrorFixer>();
+builder.Services.AddSingleton<ExecutionMemoryStore>();
 
 // 3) Register Agents
 builder.Services.AddSingleton<IPlanificadorAgent, PlanificadorAgent>();
