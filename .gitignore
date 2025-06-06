@@ -1,0 +1,21 @@
+# Ignore build outputs
+bin/
+obj/
+**/bin/
+**/obj/
+
+# Ignore Visual Studio files
+.vs/
+*.user
+*.suo
+
+# Ignore local config
+*.local
+
+# Ignore temporary files
+*.tmp
+*~
+
+# Ignore secrets
+*.env
+

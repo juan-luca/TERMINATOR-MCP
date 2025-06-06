@@ -1,6 +1,8 @@
 @page "/delete/{id:int}"
 @inject ApplicationDbContext Context
 @inject NavigationManager NavigationManager
+@using AppBasicaCRUD.Models
+@using AppBasicaCRUD.Data
 
 <h3>¿Estás seguro que quieres eliminar este producto?</h3>
 
@@ -29,7 +31,7 @@
 
 <form>
     <button type="button" class="btn btn-danger" @onclick="DeleteProducto">Eliminar</button> |
-    <a href="/list" class="btn btn-secondary">Volver a la lista</a>
+    <a href="/productos" class="btn btn-secondary">Volver a la lista</a>
 </form>
 
 @code {
@@ -47,6 +49,6 @@
     {
         Context.Productos.Remove(producto);
         await Context.SaveChangesAsync();
-        NavigationManager.NavigateTo("/list");
+        NavigationManager.NavigateTo("/productos");
     }
 }

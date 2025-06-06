@@ -15,16 +15,3 @@ Then build the solution:
 dotnet build DesarrolladorAutonomo.sln
 ```
 
-And run the API:
-
-```bash
-dotnet run --project AgentAPI
-```
-
-## Execution Memory
-
-Each time the worker processes a prompt it records the prompt, generated backlog
-and final build result in `execution_memory.json`. Additional metadata such as
-the project path and the Git commit hash are stored so you can trace exactly
-which version produced each run. This file grows over time and can be inspected
-to learn from previous runs.
